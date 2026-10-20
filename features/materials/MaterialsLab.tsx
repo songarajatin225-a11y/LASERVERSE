@@ -78,7 +78,7 @@ const REGIONS: Array<[string, number, number]> = [
 ];
 const fmtNm = (nm: number) => (nm >= 1000 ? `${formatNumber(nm / 1000, 3)} µm` : `${Math.round(nm)} nm`);
 
-function AbsorptionTab({ data, initialNm }: { data: MaterialsData; initialNm: number }) {
+export function AbsorptionTab({ data, initialNm }: { data: MaterialsData; initialNm: number }) {
   const [nm, setNm] = useState(initialNm);
   const nearest = useMemo(() => {
     let best = data.lines[0]!;
@@ -346,7 +346,7 @@ function parseLen(text: string): number | null {
 }
 const MAT_COLOURS = ["#ffb547", "#7fb2ff", "#59cec7", "#d6c9ff", "#ff8fb1"];
 
-function ThermalTab({ data }: { data: MaterialsData }) {
+export function ThermalTab({ data }: { data: MaterialsData }) {
   const [mat, setMat] = useState(data.diffusivity[2]?.material ?? data.diffusivity[0]!.material);
   const [tau, setTau] = useState(100e-9);
   const sel = data.diffusivity.find((d) => d.material === mat) ?? data.diffusivity[0]!;
@@ -530,7 +530,7 @@ function MeltBoil({ data }: { data: MaterialsData }) {
 }
 
 /* ================================================================== ablation */
-function AblationTab({ data }: { data: MaterialsData }) {
+export function AblationTab({ data }: { data: MaterialsData }) {
   const [ratio, setRatio] = useState(Math.E ** 2);
   const W = 640;
   const H = 300;
@@ -653,7 +653,7 @@ const REGIME_SPAN: Record<(typeof REGIME_ORDER)[number], [number, number]> = {
   "CW / ms": [1e-4, 1],
 };
 
-function RegimeTab({ data }: { data: MaterialsData }) {
+export function RegimeTab({ data }: { data: MaterialsData }) {
   const [tau, setTau] = useState(50e-9);
   const [cw, setCw] = useState(false);
   const [power, setPower] = useState(2000);

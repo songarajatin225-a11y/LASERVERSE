@@ -118,7 +118,7 @@ export default async function LessonPage({ params }: { params: Promise<{ part: s
                   Explore it
                 </h2>
               </div>
-              <LessonEmbed kind={enh.embed} />
+              <LessonEmbed kind={enh.embed} section={section.id} />
             </section>
           ) : null}
 
