@@ -5,6 +5,7 @@ import {
   HandbookSchema,
   ExtractionFlagSchema,
   cellText,
+  spansText,
   type Handbook,
   type Part,
   type Section,
@@ -179,4 +180,31 @@ export function handbookOutline(): NavPart[] {
 
 export function flagsFor(location: string): ExtractionFlag[] {
   return extractionFlags.filter((f) => f.location === location);
+}
+
+/**
+ * Verbatim quotation from a section's paragraphs, starting at `startsWith` and running to
+ * the end of that sentence (or `sentences` sentences). Throws if the text is not found, so
+ * quotations shown in the UI can never drift from the handbook.
+ */
+export function quote(sectionId: string, startsWith: string, sentences = 1): string {
+  const s = getSection(sectionId);
+  if (!s) throw new Error(`quote: unknown section ${sectionId}`);
+  for (const b of s.blocks) {
+    if (b.type !== "paragraph") continue;
+    const text = spansText(b.spans);
+    const at = text.indexOf(startsWith);
+    if (at < 0) continue;
+    let end = at + startsWith.length - 1;
+    for (let n = 0; n < sentences; n++) {
+      const m = /[.!?](\s|$)/.exec(text.slice(end + 1));
+      if (!m) {
+        end = text.length - 1;
+        break;
+      }
+      end = end + 1 + m.index;
+    }
+    return text.slice(at, end + 1).trim();
+  }
+  throw new Error(`quote: "${startsWith}" not found in §${sectionId}`);
 }

@@ -49,7 +49,7 @@ export function Wordmark({ className, size = "md" }: { className?: string; size?
       </span>
       <span className="flex flex-col leading-none">
         <span className={cn("font-semibold tracking-[0.18em] text-paper", s)}>LASERVERSE</span>
-        <span className="mt-1 text-[9.5px] font-medium uppercase tracking-[0.26em] text-fog-500">Photon to Product</span>
+        <span className="mt-1 whitespace-nowrap text-[9.5px] font-medium uppercase tracking-[0.26em] text-fog-500">Photon to Product</span>
       </span>
     </span>
   );

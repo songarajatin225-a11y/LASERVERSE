@@ -41,7 +41,7 @@ export default function LearnPage() {
           const first = firstPart?.sections[0];
           return (
             <StaggerItem key={l.id}>
-              <div className="flex h-full flex-col rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 p-5">
+              <div id={`level-${l.id}`} className="flex h-full scroll-mt-24 flex-col rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 p-5 target:border-teal-400/60">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="font-mono text-[12px] text-teal-300">{l.id}</div>
@@ -91,7 +91,7 @@ export default function LearnPage() {
       <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)]">
         <ul className="divide-y divide-[var(--line)]">
           {roles.map((r) => (
-            <li key={r.id} className="grid gap-3 bg-ink-800/50 px-5 py-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.4fr)] md:items-center">
+            <li key={r.id} id={`role-${r.id}`} className="grid scroll-mt-24 gap-3 bg-ink-800/50 px-5 py-4 target:bg-teal-500/10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.4fr)] md:items-center">
               <div className="flex items-start gap-3">
                 <Users aria-hidden className="mt-0.5 size-4 shrink-0 text-teal-300" />
                 <div>
