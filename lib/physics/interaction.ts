@@ -77,6 +77,18 @@ export function optimumFluence(Fth: number): number {
   return Math.E ** 2 * pos("Threshold fluence", Fth);
 }
 
+/**
+ * Removal volume per unit pulse energy for a Gaussian spot:
+ * V = (π w₀² δ / 4)·ln²(F₀/F_th), E = π w₀² F₀ / 2  ⇒  V/E = (δ / 2F₀)·ln²(F₀/F_th).
+ * Maximal at F₀ = e²·F_th, the optimum stated in §9.5. Units: m³/J.
+ */
+export function specificRemovalRate(delta: number, F0: number, Fth: number): number {
+  pos("Penetration depth δ", delta);
+  pos("Threshold fluence", Fth);
+  if (nonNeg("Peak fluence", F0) <= Fth) return 0;
+  return (delta / (2 * F0)) * Math.log(F0 / Fth) ** 2;
+}
+
 /** Incubation F_th(N) = F_th(1)·N^(S−1), S < 1 — §9.5 */
 export function incubatedThreshold(Fth1: number, N: number, S: number): number {
   pos("Single-pulse threshold", Fth1);
