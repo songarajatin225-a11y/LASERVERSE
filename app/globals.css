@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+/*
+ * LASERVERSE design tokens.
+ * Brand colours sampled from the supplied TEAL logo (public/brand/teal-logo.webp):
+ *   teal #009590 · graphite #5F5D5B · steel #75797C
+ * Surfaces are deep navy/graphite so beams and scientific visuals read clearly.
+ * Wavelength accents carry meaning in visualisations and are always paired with text labels.
+ */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-ink-950: #04070b;
+  --color-ink-900: #070b11;
+  --color-ink-850: #0a0f17;
+  --color-ink-800: #0e141e;
+  --color-ink-750: #121a26;
+  --color-ink-700: #17202e;
+  --color-ink-600: #1f2a3a;
+  --color-ink-500: #2b3749;
+  --color-ink-400: #3b4a5f;
+
+  --color-fog-500: #6f7a88;
+  --color-fog-400: #8b96a4;
+  --color-fog-300: #a9b2bd;
+  --color-fog-200: #c9d0d8;
+  --color-fog-100: #e6eaee;
+  --color-paper: #f4f2ed;
+
+  --color-teal-950: #021f1e;
+  --color-teal-900: #04302e;
+  --color-teal-800: #064744;
+  --color-teal-700: #007a75;
+  --color-teal-600: #00877f;
+  --color-teal-500: #009590; /* brand */
+  --color-teal-400: #19b2ab;
+  --color-teal-300: #59cec7;
+  --color-teal-200: #a3e6e1;
+
+  --color-graphite: #5f5d5b; /* brand */
+  --color-steel: #75797c;    /* brand */
+
+  /* wavelength accents (visualisation only) */
+  --color-wl-duv: #b39cff;   /* 193–266 nm */
+  --color-wl-uv: #8f7bff;    /* 343–355 nm */
+  --color-wl-violet: #6f6bff;/* 405 nm */
+  --color-wl-blue: #4c8dff;  /* 445–455 nm */
+  --color-wl-green: #3fd47a; /* 515–532 nm */
+  --color-wl-red: #ff4d4d;   /* 635–660 nm */
+  --color-wl-nir: #ff3d7f;   /* 0.78–1.4 µm, false colour */
+  --color-wl-swir: #ff8a3d;  /* 1.4–3 µm, false colour */
+  --color-wl-lwir: #ffb547;  /* 9–11 µm, false colour */
+
+  /* status */
+  --color-ok: #3fb68b;
+  --color-warn: #e9b24c;
+  --color-danger: #f2555a;
+  --color-info: #5aa9ff;
+  --color-concept: #a68cff;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-sweep: sweep 3.2s var(--ease-in-out-quint) infinite;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(220%); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+:root {
+  color-scheme: dark;
+  --bg: var(--color-ink-900);
+  --surface: var(--color-ink-800);
+  --surface-raised: var(--color-ink-750);
+  --line: rgb(255 255 255 / 0.075);
+  --line-strong: rgb(255 255 255 / 0.13);
+  --text: var(--color-fog-100);
+  --text-muted: var(--color-fog-400);
+  --focus: var(--color-teal-300);
+}
+
+html {
+  background: var(--color-ink-950);
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-teal-500) 45%, transparent);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* numbers in data and results */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ---------- prose for handbook content ---------- */
+.prose-hb {
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--color-fog-200);
+}
+.prose-hb p + p { margin-top: 1rem; }
+.prose-hb strong { color: var(--color-fog-100); font-weight: 600; }
+.prose-hb a { color: var(--color-teal-300); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--color-teal-300) 40%, transparent); text-underline-offset: 3px; }
+.prose-hb a:hover { text-decoration-color: currentColor; }
+.prose-hb sub, .prose-hb sup { font-size: 0.72em; }
+
+/* ---------- handbook tables ---------- */
+.hb-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.875rem; line-height: 1.5; }
+.hb-table th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--color-ink-750);
+  color: var(--color-fog-100);
+  font-weight: 600; text-align: left; vertical-align: bottom;
+  padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.hb-table td { padding: 0.55rem 0.75rem; vertical-align: top; border-bottom: 1px solid var(--line); color: var(--color-fog-200); }
+.hb-table tbody tr:hover td { background: rgb(255 255 255 / 0.02); }
+.hb-table td:first-child { color: var(--color-fog-100); font-weight: 500; }
+
+/* ---------- KaTeX on dark ---------- */
+.katex { color: var(--color-fog-100); font-size: 1.08em; }
+.katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+
+/* ---------- range inputs ---------- */
+input[type="range"].lv-range {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer;
+}
+input[type="range"].lv-range::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 99px;
+  background: linear-gradient(to right, var(--color-teal-400) var(--fill, 50%), var(--color-ink-500) var(--fill, 50%));
+}
+input[type="range"].lv-range::-moz-range-track { height: 4px; border-radius: 99px; background: var(--color-ink-500); }
+input[type="range"].lv-range::-moz-range-progress { height: 4px; border-radius: 99px; background: var(--color-teal-400); }
+input[type="range"].lv-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; margin-top: -7px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--color-paper); border: 3px solid var(--color-teal-500);
+  box-shadow: 0 0 0 4px rgb(0 149 144 / 0.18);
+  transition: transform 160ms var(--ease-out-expo);
+}
+input[type="range"].lv-range::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-paper); border: 3px solid var(--color-teal-500);
+}
+input[type="range"].lv-range:active::-webkit-slider-thumb { transform: scale(1.15); }
+input[type="range"].lv-range:focus-visible { outline: none; }
+input[type="range"].lv-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--focus); }
+input[type="range"].lv-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--focus); }
+
+/* ---------- utilities ---------- */
+.hairline { border-color: var(--line); }
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: var(--color-ink-500) transparent; }
+.scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-ink-500); border-radius: 99px; }
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media print {
+  body { background: white; color: black; }
+}
