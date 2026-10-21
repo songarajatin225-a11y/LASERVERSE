@@ -122,7 +122,11 @@ function OutputValue({ o, value }: { o: CalcOutputDef; value: number | string | 
   );
 }
 
-export function CalculatorWorkbench({ id }: { id: string }) {
+/**
+ * `embedded` renders the workbench inside another page: the title becomes an h2 and the
+ * calculator is not recorded in recent activity or offered as a separate bookmark.
+ */
+export function CalculatorWorkbench({ id, embedded = false }: { id: string; embedded?: boolean }) {
   const def = getCalculator(id);
   if (!def) throw new Error(`Unknown calculator ${id}`);
 
@@ -196,18 +200,26 @@ export function CalculatorWorkbench({ id }: { id: string }) {
 
   return (
     <div>
-      <TrackVisit item={{ id: `calc:${def.id}`, kind: "calculator", title: def.title, href: `/calculators/${def.id}` }} />
+      {embedded ? null : <TrackVisit item={{ id: `calc:${def.id}`, kind: "calculator", title: def.title, href: `/calculators/${def.id}` }} />}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-teal-300">{CATEGORY_LABEL[def.category]}</span>
             <ClassTag kind={def.classification} />
           </div>
-          <h1 className="text-balance text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">{def.title}</h1>
+          {embedded ? (
+            <h2 className="text-balance text-[clamp(1.3rem,2.2vw,1.8rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">
+              <Link href={`/calculators/${def.id}`} className="hover:text-teal-100">
+                {def.title}
+              </Link>
+            </h2>
+          ) : (
+            <h1 className="text-balance text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">{def.title}</h1>
+          )}
           <p className="mt-2 text-[15px] leading-relaxed text-fog-300">{def.summary}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <BookmarkButton item={{ id: `calc:${def.id}`, kind: "calculator", title: def.title, href: `/calculators/${def.id}` }} />
+          {embedded ? null : <BookmarkButton item={{ id: `calc:${def.id}`, kind: "calculator", title: def.title, href: `/calculators/${def.id}` }} />}
           <CopyButton text={copyText} label="Copy result" />
         </div>
       </div>

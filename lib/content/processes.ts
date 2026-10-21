@@ -1,5 +1,5 @@
 import "server-only";
-import { getTable, tableRecords, quote, tablesIn } from "./handbook";
+import { getTable, tableRecords, quote, getSection } from "./handbook";
 import type { TableBlock } from "./schema";
 
 export type ProcessId = "marking" | "welding" | "cutting" | "cleaning" | "drilling" | "uv-co2";
@@ -122,22 +122,22 @@ export function selectionMatrix(): TableBlock {
   return getTable("B.6", 1, ["Material", "Marking", "Cutting", "Welding / joining", "Drilling", "Cleaning", "Micromachining"]);
 }
 
-/** §26.1 reference machine tables keyed by subheading text. */
+/** §26.1 reference machine tables, each paired with the subheading that precedes it in the handbook. */
 export function referenceMachines(): Array<{ title: string; table: TableBlock }> {
-  const s = tablesIn("26.1");
-  const titles = [
-    "1. Fiber laser marking machine (Class 1 workstation)",
-    "2. CO₂ PCB marking machine (in-line)",
-    "3. UV marking machine",
-    "4. Laser welding machine (fiber, wobble head)",
-    "6. Battery module welding machine",
-    "7. Laser cleaning machine",
-    "8. Laser cutting machine (flatbed)",
-    "9. Semiconductor marking machine",
-    "10. Ultrafast laser micromachining machine",
-  ];
-  if (s.length !== titles.length) throw new Error(`§26.1: expected ${titles.length} machine tables, found ${s.length}`);
-  return titles.map((title, i) => ({ title, table: s[i]! }));
+  const section = getSection("26.1");
+  if (!section) throw new Error("§26.1 not found");
+  const out: Array<{ title: string; table: TableBlock }> = [];
+  let heading: string | null = null;
+  for (const b of section.blocks) {
+    if (b.type === "subheading") heading = b.text;
+    if (b.type === "table") {
+      if (!heading || !/^\d+\.\s/.test(heading)) throw new Error(`§26.1: table ${b.id} has no numbered machine heading`);
+      out.push({ title: heading, table: b });
+      heading = null;
+    }
+  }
+  if (out.length < 9) throw new Error(`§26.1: expected at least 9 machine tables, found ${out.length}`);
+  return out;
 }
 
 /* ------------------------------------------------------------------ per-process tool data */

@@ -127,7 +127,12 @@ export function HandbookFigure({ fig }: { fig: Figure | undefined }) {
       </div>
       <figcaption className="mt-2 text-[12.5px] leading-snug text-fog-400">
         <span className="font-medium text-fog-200">{fig.title}</span>
-        {fig.alt ? <span className="block text-fog-500">{fig.alt}</span> : null}
+        {fig.alt ? (
+          <span className="block text-fog-500">
+            <span className="text-fog-600">Description written for LASERVERSE from the figure (not handbook text): </span>
+            {fig.alt}
+          </span>
+        ) : null}
       </figcaption>
     </figure>
   );
