@@ -23,7 +23,7 @@ export default function SourcesPage() {
         description={
           <>
             The handbook&rsquo;s own Sources page, reproduced as written, followed by every external link found in the handbook ({links.length} distinct pages,{" "}
-            {total} links in all, {cited.length} of them also cited in the body). <SourceRef section="back.sources" />
+            {total} links in all; {cited.length} of the pages are cited in the body of the handbook). <SourceRef section="back.sources" />
           </>
         }
       >

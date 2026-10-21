@@ -32,9 +32,11 @@ export default function FiguresPage() {
         }
       >
         <ClassTag kind="handbook" />
+        <ClassTag kind="additional" />
         <BookmarkButton item={ITEM} />
       </PageHeader>
       <ReferenceNav current="figures" />
+      <h2 className="sr-only">All handbook figures</h2>
       <FigureGallery figures={figures} />
     </div>
   );

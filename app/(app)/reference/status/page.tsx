@@ -6,10 +6,9 @@ import { Breadcrumbs, TrackVisit, BookmarkButton } from "@/components/shell/Chro
 import { PageHeader, ClassTag, SectionTitle, Badge, StatusPill, Callout } from "@/components/ui/primitives";
 import { SourceRef } from "@/components/ui/SourceRef";
 import { ReferenceNav } from "@/features/reference/ReferenceNav";
-import { statusData, NOT_IMPLEMENTED } from "@/lib/content/reference";
+import { statusData, implementedAreas, NOT_IMPLEMENTED } from "@/lib/content/reference";
 import { CLASSIFICATION, STATUS_LABEL, type Classification, type ContentStatus } from "@/lib/content/classification";
 import { outlineSection } from "@/lib/content/outline";
-import { NAV_ITEMS } from "@/lib/nav";
 
 export const metadata: Metadata = { title: "Content & Validation Status" };
 const ITEM = { id: "reference:status", kind: "reference" as const, title: "Content & Validation Status", href: "/reference/status" };
@@ -183,7 +182,10 @@ export default function StatusPage() {
         })}
       </div>
 
-      <SectionTitle id="review-flags" sub="Raised while cross-checking the handbook's numbers against its own equations. The handbook text is never altered; these notes are shown next to the affected content.">
+      <SectionTitle
+        id="review-flags"
+        sub="Raised during technical review of the ingested content: charts missing from the supplied file, the equation transcriptions, cross-checks of the handbook's numbers against its own equations and tables, and standards editions not independently verified. The handbook text is never altered; these notes are shown next to the affected content."
+      >
         Technical review flags
       </SectionTitle>
       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -238,7 +240,7 @@ export default function StatusPage() {
         </div>
       </div>
 
-      <SectionTitle id="platform" sub="An honest account of this build. No performance or accessibility measurements are claimed.">
+      <SectionTitle id="platform" sub="What this build contains and what it does not. No performance measurements or accessibility audit results are claimed.">
         Platform implementation status
       </SectionTitle>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -246,8 +248,12 @@ export default function StatusPage() {
           <h3 className="mb-3 flex items-center gap-2 text-[14px] font-semibold text-fog-100">
             <CircleCheck aria-hidden className="size-4 text-ok" /> Areas in this build
           </h3>
+          <p className="mb-2 text-[12.5px] leading-snug text-fog-500">
+            Each area below exists as a page in this build. Being listed here describes what is built; it is not a claim that the content has been technically
+            reviewed or validated.
+          </p>
           <ul className="flex flex-col divide-y divide-[var(--line)]">
-            {NAV_ITEMS.map((n) => (
+            {implementedAreas().map((n) => (
               <li key={n.id} className="py-2">
                 <Link href={n.href} className="group flex items-start justify-between gap-3">
                   <span className="min-w-0">

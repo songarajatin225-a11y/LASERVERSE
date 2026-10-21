@@ -12,14 +12,15 @@ import { hrefFor, partOf } from "@/lib/content/outline";
 export const metadata: Metadata = { title: "Formula Library" };
 const ITEM = { id: "reference:formulas", kind: "reference" as const, title: "Formula Library", href: "/reference/formulas" };
 
-function Group({ g }: { g: FormulaGroup }) {
+function Group({ g, level = 3 }: { g: FormulaGroup; level?: 3 | 4 }) {
+  const Heading = level === 3 ? "h3" : "h4";
   return (
     <section aria-labelledby={g.id} className="min-w-0 rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/50 p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 id={g.id} className="scroll-mt-24 text-[16px] font-semibold text-paper">
+          <Heading id={g.id} className="scroll-mt-24 text-[16px] font-semibold text-paper">
             {g.title}
-          </h3>
+          </Heading>
           <p className="mt-1 text-[12.5px] text-fog-500">
             {g.figures.length} equation image{g.figures.length === 1 ? "" : "s"} · <SourceRef section={g.sectionId} />
           </p>
@@ -126,7 +127,7 @@ export default function FormulasPage() {
         </div>
       </nav>
 
-      <SectionTitle id="formula-sheet" sub="Handbook §B.3 — the seven groups of the formula sheet, in the handbook's order.">
+      <SectionTitle id="formula-sheet" sub={`Handbook §B.3 — the ${sheet.length} groups of the formula sheet, in the handbook's order.`}>
         Formula sheet
       </SectionTitle>
       <div className="flex flex-col gap-4">
@@ -144,7 +145,7 @@ export default function FormulasPage() {
             <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-teal-300">{p.title}</h3>
             <div className="grid gap-4 xl:grid-cols-2">
               {p.groups.map((g) => (
-                <Group key={g.id} g={g} />
+                <Group key={g.id} g={g} level={4} />
               ))}
             </div>
           </div>

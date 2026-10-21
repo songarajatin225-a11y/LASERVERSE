@@ -121,11 +121,12 @@ function ChildCard({ node, tokens }: { node: MapNode; tokens: string[] }) {
   const hit = matches(`${node.label} ${node.items.join(" ")}`, tokens);
   return (
     <li id={node.id} className={cn("min-w-0 scroll-mt-28 rounded-[var(--radius-md)] border bg-ink-850/70 p-3", hit ? "border-teal-400/55" : "border-[var(--line)]")}>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span aria-hidden className="h-px w-3 bg-teal-500/50" />
-        <h4 className="text-[13.5px] font-semibold text-fog-100">
+        <h3 className="text-[13.5px] font-semibold text-fog-100">
           <Highlight text={node.label} tokens={tokens} />
-        </h4>
+        </h3>
+        <PartLinks node={node} className="ml-auto" />
       </div>
       {node.items.length ? (
         <div className="mt-2">
@@ -250,7 +251,7 @@ export function TechnologyMap({ data }: { data: TechnologyMapData }) {
           Walking the tree upward
         </h2>
         <p className="mt-1.5 max-w-3xl text-[13.5px] leading-relaxed text-fog-200">“{data.outro}”</p>
-        <ol className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-2" aria-label="Upward walk, from product to cost per part">
+        <ol className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-2" aria-label={`Upward walk, from ${data.chain[0]?.text ?? ""} to ${data.chain.at(-1)?.text ?? ""}`}>
           {data.chain.map((c, i) => (
             <li key={c.text} className="flex items-center gap-1">
               {c.target ? (

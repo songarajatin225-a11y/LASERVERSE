@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link2, Search, X } from "lucide-react";
 import { cn } from "@/components/ui/primitives";
 import { linkRefs } from "@/components/handbook/linkRefs";
@@ -21,6 +21,9 @@ function groupByLetter<T extends { letter: string }>(xs: T[]): Array<[string, T[
   return [...m.entries()].sort(([a], [b]) => (a === "#" ? 1 : b === "#" ? -1 : a.localeCompare(b)));
 }
 
+/** Id of a letter heading ("#" — entries not starting with A–Z — becomes "other"). */
+const letterId = (prefix: string, letter: string) => `${prefix}-${letter === "#" ? "other" : letter}`;
+
 function JumpBar({ prefix, present, label }: { prefix: string; present: Set<string>; label: string }) {
   return (
     <nav aria-label={label} className="flex flex-wrap gap-1">
@@ -28,7 +31,7 @@ function JumpBar({ prefix, present, label }: { prefix: string; present: Set<stri
         present.has(l) ? (
           <a
             key={l}
-            href={`#${prefix}-${l}`}
+            href={`#${letterId(prefix, l)}`}
             className="inline-flex size-7 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--line)] font-mono text-[12px] text-fog-200 hover:border-teal-400/60 hover:text-teal-100"
           >
             {l}
@@ -66,6 +69,21 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
   const termGroups = groupByLetter(shownTerms);
   const abbrGroups = groupByLetter(shownAbbr);
 
+  // Following a link to an entry the filter hides (a search hit, or a term ↔ abbreviation
+  // cross-link) clears the filter so the target exists, then scrolls to it.
+  useEffect(() => {
+    const known = new Set([...terms.map((t) => t.anchor), ...abbreviations.map((a) => a.anchor)]);
+    const reveal = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (!known.has(id) || document.getElementById(id)) return;
+      setQ("");
+      requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
+    };
+    reveal();
+    window.addEventListener("hashchange", reveal);
+    return () => window.removeEventListener("hashchange", reveal);
+  }, [terms, abbreviations]);
+
   return (
     <div className="flex flex-col gap-8">
       <div className="sticky top-16 z-10 flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-900/90 p-3 backdrop-blur">
@@ -98,9 +116,9 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
       </div>
 
       {/* ------------------------------------------------ §B.1 glossary */}
-      <section aria-labelledby="glossary" className="flex flex-col gap-4">
+      <section id="glossary" aria-labelledby="glossary-heading" className="flex scroll-mt-44 flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 id="glossary" className="scroll-mt-44 text-xl font-semibold text-paper">
+          <h2 id="glossary-heading" className="text-xl font-semibold text-paper">
             Glossary <span className="font-mono text-[13px] font-normal text-fog-500">§B.1 · {terms.length} terms</span>
           </h2>
         </div>
@@ -109,7 +127,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
           <div className="flex flex-col gap-6">
             {termGroups.map(([letter, items]) => (
               <div key={letter} className="grid gap-x-6 md:grid-cols-[3rem_1fr]">
-                <h3 id={`glossary-${letter}`} className="scroll-mt-44 font-mono text-[22px] font-semibold text-teal-300 md:pt-2">
+                <h3 id={letterId("glossary", letter)} className="scroll-mt-44 font-mono text-[22px] font-semibold text-teal-300 md:pt-2">
                   {letter}
                 </h3>
                 <dl className="divide-y divide-[var(--line)] rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/60">
@@ -122,7 +140,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
                       <dd className="mt-1 text-[13.5px] leading-relaxed text-fog-300">
                         {linkRefs(t.definition, `${t.anchor}-`)}
                         {t.abbr ? (
-                          <a href={`#${t.abbr.anchor}`} className="ml-2 inline-flex rounded-full border border-[var(--line-strong)] px-2 py-0.5 font-mono text-[11px] text-fog-300 hover:border-teal-400/60 hover:text-teal-100">
+                          <a href={`#${t.abbr.anchor}`} aria-label={`Abbreviation ${t.abbr.label}`} className="ml-2 inline-flex rounded-full border border-[var(--line-strong)] px-2 py-0.5 font-mono text-[11px] text-fog-300 hover:border-teal-400/60 hover:text-teal-100">
                             {t.abbr.label} ↓
                           </a>
                         ) : null}
@@ -139,8 +157,8 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
       </section>
 
       {/* ------------------------------------------------ §B.2 abbreviations */}
-      <section aria-labelledby="abbreviations" className="flex flex-col gap-4">
-        <h2 id="abbreviations" className="scroll-mt-44 text-xl font-semibold text-paper">
+      <section id="abbreviations" aria-labelledby="abbreviations-heading" className="flex scroll-mt-44 flex-col gap-4">
+        <h2 id="abbreviations-heading" className="text-xl font-semibold text-paper">
           Abbreviations <span className="font-mono text-[13px] font-normal text-fog-500">§B.2 · {abbreviations.length} entries</span>
         </h2>
         <JumpBar prefix="abbreviations" present={new Set(abbrGroups.map(([l]) => l))} label="Abbreviation letters" />
@@ -148,7 +166,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
           <div className="flex flex-col gap-6">
             {abbrGroups.map(([letter, items]) => (
               <div key={letter} className="grid gap-x-6 md:grid-cols-[3rem_1fr]">
-                <h3 id={`abbreviations-${letter}`} className="scroll-mt-44 font-mono text-[22px] font-semibold text-teal-300 md:pt-2">
+                <h3 id={letterId("abbreviations", letter)} className="scroll-mt-44 font-mono text-[22px] font-semibold text-teal-300 md:pt-2">
                   {letter}
                 </h3>
                 <dl className="grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--line)] sm:grid-cols-2">
@@ -163,7 +181,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
                         {a.terms.length ? (
                           <span className="mt-1.5 flex flex-wrap gap-1">
                             {a.terms.map((t) => (
-                              <a key={t.anchor} href={`#${t.anchor}`} className="inline-flex rounded-full border border-[var(--line-strong)] px-2 py-0.5 text-[11px] text-fog-400 hover:border-teal-400/60 hover:text-teal-100">
+                              <a key={t.anchor} href={`#${t.anchor}`} aria-label={`Glossary term ${t.label}`} className="inline-flex rounded-full border border-[var(--line-strong)] px-2 py-0.5 text-[11px] text-fog-400 hover:border-teal-400/60 hover:text-teal-100">
                                 ↑ {t.label}
                               </a>
                             ))}

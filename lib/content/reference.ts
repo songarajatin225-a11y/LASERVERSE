@@ -17,6 +17,8 @@ import { parsePartList } from "./parts";
 import { slug } from "@/lib/slug";
 import { REVIEW_FLAGS, type ReviewFlag } from "@/content/review-flags";
 import { CALCULATORS, CALCULATOR_INDEX } from "@/features/calculators/definitions";
+import { glossaryAnchors, abbreviationAnchors } from "@/features/search/anchors";
+import { NAV_ITEMS } from "@/lib/nav";
 import type {
   AbbreviationEntry,
   DecisionClass,
@@ -30,26 +32,33 @@ import type {
 
 /* ================================================================== helpers */
 
-/**
- * Unique DOM anchors `<prefix>-<slug(name)>`. A repeated slug gets -2, -3 … so that
- * every anchor on a page is distinct and the first occurrence keeps the plain form.
- */
-export function uniqueAnchors(prefix: string, names: string[]): string[] {
-  const used = new Set<string>();
-  return names.map((n) => {
-    const base = `${prefix}-${slug(n) || "item"}`;
-    let anchor = base;
-    let k = 1;
-    while (used.has(anchor)) anchor = `${base}-${++k}`;
-    used.add(anchor);
-    return anchor;
-  });
+/** Throws when a list of DOM anchors contains a repeat (so a re-ingest cannot ship duplicate ids). */
+function assertUnique(what: string, anchors: string[]): string[] {
+  const seen = new Set<string>();
+  for (const a of anchors) {
+    if (seen.has(a)) throw new Error(`${what}: duplicate anchor "${a}"`);
+    seen.add(a);
+  }
+  return anchors;
 }
 
 /** A–Z jump letter for a term ("Étendue" → "E"); "#" for anything else. */
 export function letterOf(s: string): string {
   const c = (s.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, "")[0] ?? "").toUpperCase();
   return /^[A-Z]$/.test(c) ? c : "#";
+}
+
+/** The handbook subheading printed just before the n-th (1-based) table of a section, if any. */
+export function tableHeading(sectionId: string, index: number): string | null {
+  const s = getSection(sectionId);
+  if (!s) throw new Error(`reference: unknown handbook section ${sectionId}`);
+  let heading: string | null = null;
+  let n = 0;
+  for (const b of s.blocks) {
+    if (b.type === "subheading") heading = b.text;
+    else if (b.type === "table" && ++n === index) return heading;
+  }
+  throw new Error(`reference: §${sectionId} has no table ${index}`);
 }
 
 function sectionRef(id: string) {
@@ -83,6 +92,8 @@ export function referenceIndexData() {
   for (const key of Object.keys(B4_LINKS)) {
     if (!chartRows.some((r) => r.item === key)) throw new Error(`§B.4: no row "${key}" (platform link map drifted)`);
   }
+  const b6 = outlineSection("B.6");
+  if (!b6) throw new Error("§B.6 process selection matrix missing from the outline");
   const glance = getTable("B.10", 1, ["Layer", "Decision", "Governing rule", "Numbers to remember"]);
   return {
     glance,
@@ -92,11 +103,15 @@ export function referenceIndexData() {
       rule: r["Governing rule"] ?? "",
       numbers: r["Numbers to remember"] ?? "",
     })),
+    /** §27.1 subheadings over tables 2–4 (table 1 has none) */
+    quickRefHeadings: { families: tableHeading("27.1", 2), power: tableHeading("27.1", 3), regimes: tableHeading("27.1", 4) },
     quickRef: getTable("27.1", 1, ["Reference", "Location"]),
     families: getTable("27.1", 2, ["Family", "λ", "Average power", "Pulse", "Wall-plug efficiency", "Beam quality", "Relative cost per W", "Sweet spot"]),
     powerByApp: getTable("27.1", 3, ["Application", "Power"]),
     regimes: getTable("27.1", 4, ["Regime", "Thermal diffusion length", "Interaction", "Typical processes"]),
     charts: chartRows,
+    /** §B.6 is presented on the Process Simulator page (/processes#selection-matrix). */
+    selectionMatrix: { sectionId: "B.6", title: b6.s.title },
     learningPath: getTable("B.9", 1, ["Stage", "What to study", "Suggested resources"]),
   };
 }
@@ -117,11 +132,17 @@ const splitAbbr = (s: string) =>
     .map((x) => x.trim())
     .filter(Boolean);
 
+/**
+ * §B.1 / §B.2 entries with their DOM anchors. The anchors come from the same functions the
+ * search index uses (features/search/anchors.ts), so every glossary/abbreviation search hit
+ * lands on the row it names; a repeated anchor throws.
+ */
 export function glossaryData(): { terms: GlossaryEntry[]; abbreviations: AbbreviationEntry[] } {
   const termRows = tableRecords(glossaryTable());
   const abbrRows = tableRecords(abbreviationTable());
-  const termAnchors = uniqueAnchors("term", termRows.map((r) => r["Term"] ?? ""));
-  const abbrAnchors = uniqueAnchors("abbr", abbrRows.map((r) => r["Abbreviation"] ?? ""));
+  const termAnchors = glossaryAnchors(termRows.map((r) => r["Term"] ?? ""));
+  const abbrAnchors = abbreviationAnchors(abbrRows.map((r) => r["Abbreviation"] ?? ""));
+  assertUnique("§B.1/§B.2 glossary page", [...termAnchors, ...abbrAnchors, "glossary", "abbreviations"]);
 
   const abbreviations: AbbreviationEntry[] = abbrRows.map((r, i) => ({
     abbr: r["Abbreviation"] ?? "",
@@ -173,7 +194,7 @@ export const SHEET_CALCULATORS: Record<string, string[]> = {
   "Photons and waves": ["photon-energy", "wavelength-frequency", "energy-units", "photons-in-pulse", "radiation-force", "field-amplitude"],
   "Laser physics": ["threshold-gain", "quantum-defect", "cavity-modes", "coherence-length"],
   Pulses: ["pulse-parameters", "average-power", "fluence", "pulse-overlap", "time-bandwidth"],
-  "Gaussian beams and focusing": ["gaussian-propagation", "focus-spot", "bpp-m2", "fiber-imaging", "brightness"],
+  "Gaussian beams and focusing": ["gaussian-propagation", "focus-spot", "bpp-m2", "fiber-imaging", "brightness", "cw-intensity"],
   "Optics and materials": ["fresnel", "hagen-rubens"],
   "Thermal and ablation": ["thermal-diffusion", "energy-per-length", "ablation-depth", "critical-power"],
   "Safety and economics": ["optical-density", "nohd", "cost-per-part", "cycle-time"],
@@ -584,7 +605,8 @@ export function decisionTreeData(): DecisionTreeData {
     checks: [
       { label: "Absorption check — Material Interaction Lab", href: "/materials?tab=absorption" },
       { label: "HAZ check — thermal diffusion length", href: "/calculators/thermal-diffusion" },
-      { label: "DOE — §23.6 parameter development", href: hrefFor("23.6") },
+      { label: `DOE — ${labelFor("23.6")} lesson`, href: hrefFor("23.6") },
+      { label: "DOE planning — Safety & Quality", href: "/safety#doe" },
     ],
   };
 }
@@ -632,6 +654,25 @@ export function statusData() {
   };
 }
 
+export interface PlatformArea {
+  id: string;
+  label: string;
+  href: string;
+  description: string;
+}
+
+/**
+ * Areas that exist in this build (stated on /reference/status): the landing page, every
+ * sidebar area (lib/nav.ts) and the search page. Platform text, not handbook content.
+ */
+export function implementedAreas(): PlatformArea[] {
+  return [
+    { id: "landing", label: "Landing page", href: "/", description: "Introduction to the platform, with entry points into the academy, the machine explorer and the technology map." },
+    ...NAV_ITEMS.map(({ id, label, href, description }) => ({ id, label, href, description })),
+    { id: "search", label: "Search", href: "/search", description: "Local lexical search across lessons, tables, glossary, abbreviations, equations, figures and tools." },
+  ];
+}
+
 /** Capabilities that are deliberately NOT part of this build (stated on /reference/status). */
 export const NOT_IMPLEMENTED: Array<{ title: string; detail: string }> = [
   {
@@ -648,7 +689,11 @@ export const NOT_IMPLEMENTED: Array<{ title: string; detail: string }> = [
   },
   {
     title: "Performance measurements",
-    detail: "No load-time, rendering or accessibility audit figures are claimed for this build.",
+    detail: "No load-time, rendering or bundle-size measurements have been recorded, and none are claimed for this build.",
+  },
+  {
+    title: "Automated visual-regression and accessibility audits",
+    detail: "No screenshot-comparison tests or automated axe accessibility audits are part of this build, so no audit results are claimed.",
   },
   {
     title: "Experimental validation",

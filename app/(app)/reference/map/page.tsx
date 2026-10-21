@@ -9,7 +9,7 @@ import { technologyMapData, hierarchyFigure } from "@/lib/content/reference";
 
 export const metadata: Metadata = {
   title: "Master Laser Technology Map",
-  description: "The Complete Laser Handbook on one interactive tree: from the photon to industries, every branch linked to the Part that develops it.",
+  description: "The Complete Laser Handbook's master technology map as an interactive tree, from the photon to industries, with branches linked to the Parts the handbook names for them.",
 };
 const ITEM = { id: "reference:map", kind: "reference" as const, title: "Master Laser Technology Map", href: "/reference/map" };
 

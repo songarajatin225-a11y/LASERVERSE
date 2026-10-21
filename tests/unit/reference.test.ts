@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as React from "react";
+import { createElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import fs from "node:fs";
 import {
-  uniqueAnchors,
   letterOf,
   referenceIndexData,
   glossaryData,
@@ -22,19 +25,25 @@ import {
   statusData,
   sourcesData,
   externalLinks,
+  implementedAreas,
+  NOT_IMPLEMENTED,
 } from "@/lib/content/reference";
-import { handbook } from "@/lib/content/handbook";
+import { handbook, getTable, tableRecords, extractionFlags, extractionReport } from "@/lib/content/handbook";
 import { slug } from "@/lib/slug";
 import { CALCULATOR_INDEX } from "@/features/calculators/definitions";
 import { REFERENCE_PAGES } from "@/features/reference/pages";
-import { outlineSection } from "@/lib/content/outline";
+import { outline, outlineSection } from "@/lib/content/outline";
+import { glossaryAnchors, abbreviationAnchors } from "@/features/search/anchors";
+import { buildSearchIndex } from "@/lib/search/buildIndex";
+import { PROCESS_DEFS } from "@/lib/content/processes";
+import { NAV_ITEMS } from "@/lib/nav";
+import { REVIEW_FLAGS } from "@/content/review-flags";
 import type { MapNode } from "@/features/reference/types";
 
 describe("anchors", () => {
-  it("suffixes duplicate slugs with -2, -3 and keeps the first plain", () => {
-    expect(uniqueAnchors("term", ["Kerf", "kerf", "KERF", "Dross"])).toEqual(["term-kerf", "term-kerf-2", "term-kerf-3", "term-dross"]);
-    // a natural "-2" slug cannot collide with a generated suffix
-    expect(new Set(uniqueAnchors("x", ["a 2", "a", "a"])).size).toBe(3);
+  it("uses the search index's anchor functions: -2, -3 on repeats, first stays plain", () => {
+    expect(glossaryAnchors(["Kerf", "kerf", "KERF", "Dross"])).toEqual(["term-kerf", "term-kerf-2", "term-kerf-3", "term-dross"]);
+    expect(abbreviationAnchors(["MPE / NOHD", "HAZ"])).toEqual(["abbr-mpe-nohd", "abbr-haz"]);
   });
   it("assigns A–Z letters, folding accents", () => {
     expect(letterOf("Étendue")).toBe("E");
@@ -54,6 +63,8 @@ describe("reference index", () => {
     expect(d.regimes.rows.length).toBe(5);
     expect(d.charts.length).toBe(8);
     expect(d.learningPath.rows.length).toBe(5);
+    expect(d.quickRefHeadings).toEqual({ families: "Laser families at a glance", power: "Typical average power by application", regimes: "Pulse-duration regimes" });
+    expect(d.selectionMatrix).toEqual({ sectionId: "B.6", title: "Process selection matrix" });
   });
   it("lists sub-pages whose source sections exist", () => {
     for (const p of REFERENCE_PAGES) for (const s of p.sections) expect(outlineSection(s), `${p.id}: ${s}`).toBeDefined();
@@ -69,8 +80,29 @@ describe("glossary", () => {
   it("uses term-<slug> / abbr-<slug> anchors, unique across the whole page", () => {
     for (const t of g.terms) expect(t.anchor.startsWith(`term-${slug(t.term)}`)).toBe(true);
     for (const a of g.abbreviations) expect(a.anchor.startsWith(`abbr-${slug(a.abbr)}`)).toBe(true);
-    const all = [...g.terms.map((t) => t.anchor), ...g.abbreviations.map((a) => a.anchor), "abbreviations"];
+    const all = [...g.terms.map((t) => t.anchor), ...g.abbreviations.map((a) => a.anchor), "glossary", "abbreviations"];
     expect(new Set(all).size).toBe(all.length);
+  });
+  it("anchors equal the search index's glossary and abbreviation hrefs, in table order", () => {
+    const docs = buildSearchIndex();
+    const hashes = (kind: string) =>
+      docs
+        .filter((d) => d.kind === kind)
+        .map((d) => {
+          expect(d.href.startsWith("/reference/glossary#"), d.href).toBe(true);
+          return d.href.slice("/reference/glossary#".length);
+        });
+    expect(g.terms.map((t) => t.anchor)).toEqual(hashes("glossary"));
+    expect(g.abbreviations.map((a) => a.anchor)).toEqual(hashes("abbreviation"));
+    // and both equal the shared functions applied to the handbook tables
+    expect(g.terms.map((t) => t.anchor)).toEqual(glossaryAnchors(tableRecords(getTable("B.1", 1)).map((r) => r["Term"] ?? "")));
+    expect(g.abbreviations.map((a) => a.anchor)).toEqual(abbreviationAnchors(tableRecords(getTable("B.2", 1)).map((r) => r["Abbreviation"] ?? "")));
+  });
+  it("shows each §B.1/§B.2 row verbatim", () => {
+    const t = tableRecords(getTable("B.1", 1));
+    expect(g.terms.map((x) => [x.term, x.definition])).toEqual(t.map((r) => [r["Term"], r["Definition"]]));
+    const a = tableRecords(getTable("B.2", 1));
+    expect(g.abbreviations.map((x) => [x.abbr, x.meaning])).toEqual(a.map((r) => [r["Abbreviation"], r["Meaning"]]));
   });
   it("cross-links terms and abbreviations only on exact tokens", () => {
     const bpp = g.terms.find((t) => t.term === "Beam parameter product (BPP)")!;
@@ -238,6 +270,24 @@ describe("status and sources", () => {
     expect(s.reviewFlags.length).toBeGreaterThan(0);
     expect(s.equations.total).toBe(43);
     expect(s.equations.withLatex).toBe(43);
+    expect(s.flags).toEqual(extractionFlags); // the full list, not a sample
+    expect(Object.fromEntries(s.counts)).toEqual(extractionReport.counts);
+    expect(s.source.sha256).toBe(handbook.source.sha256);
+    expect(s.reviewFlags.map((f) => f.id)).toEqual(REVIEW_FLAGS.map((f) => f.id));
+    expect(s.generatedAt).toBe(handbook.generatedAt);
+  });
+  it("states the platform implementation status honestly", () => {
+    const hrefs = implementedAreas().map((a) => a.href);
+    for (const h of ["/", "/search", "/architecture", "/safety", "/troubleshooting", "/reference", "/materials", "/processes", "/applications", "/machine"]) {
+      expect(hrefs, h).toContain(h);
+    }
+    for (const n of NAV_ITEMS) expect(hrefs).toContain(n.href);
+    for (const h of hrefs) expect(fs.existsSync(h === "/" ? "app/page.tsx" : `app/(app)${h}/page.tsx`), h).toBe(true);
+    const missing = NOT_IMPLEMENTED.map((n) => `${n.title} ${n.detail}`.toLowerCase());
+    for (const needle of ["ai assistant", "semantic search", "accounts", "performance", "visual-regression", "axe"]) {
+      expect(missing.some((m) => m.includes(needle)), needle).toBe(true);
+    }
+    expect(missing.find((m) => m.includes("ai assistant"))).toContain("does not depend on ai");
   });
   it("groups external links by URL and keeps every citing location", () => {
     const d = sourcesData();
@@ -246,5 +296,206 @@ describe("status and sources", () => {
     expect(d.links.reduce((n, l) => n + l.locations.length, 0)).toBe(d.total);
     expect(d.blocks.some((b) => b.type === "list")).toBe(true);
     for (const l of d.links) for (const loc of l.locations) expect(outlineSection(loc), loc).toBeDefined();
+  });
+});
+
+/* ------------------------------------------------------------------ server render of every page */
+vi.mock("next/link", () => ({
+  default: ({ href, children, className, title, ...rest }: { href: string; children?: ReactNode; className?: string; title?: string; [k: string]: unknown }) =>
+    createElement("a", { href, className, title, "aria-label": rest["aria-label"], "aria-current": rest["aria-current"] }, children),
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/reference",
+  useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+const PAGES = {
+  "/reference": () => import("@/app/(app)/reference/page"),
+  "/reference/glossary": () => import("@/app/(app)/reference/glossary/page"),
+  "/reference/formulas": () => import("@/app/(app)/reference/formulas/page"),
+  "/reference/figures": () => import("@/app/(app)/reference/figures/page"),
+  "/reference/map": () => import("@/app/(app)/reference/map/page"),
+  "/reference/decision-tree": () => import("@/app/(app)/reference/decision-tree/page"),
+  "/reference/status": () => import("@/app/(app)/reference/status/page"),
+  "/reference/sources": () => import("@/app/(app)/reference/sources/page"),
+} as const;
+type Route = keyof typeof PAGES;
+
+const html = new Map<Route, string>();
+async function render(route: Route): Promise<string> {
+  const hit = html.get(route);
+  if (hit) return hit;
+  // the project's vitest config compiles TSX with the classic runtime
+  (globalThis as { React?: typeof React }).React = React;
+  const mod = await PAGES[route]();
+  const out = renderToStaticMarkup(createElement(mod.default));
+  html.set(route, out);
+  return out;
+}
+const idsOf = (h: string) => [...h.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!);
+const hrefsOf = (h: string) => [...new Set([...h.matchAll(/\shref="([^"]+)"/g)].map((m) => m[1]!.replace(/&amp;/g, "&")))];
+
+/** Anchors other areas own (product brief link conventions). */
+const FOREIGN_ANCHORS: Record<string, string[]> = {
+  "/safety": ["classes", "hazards", "standards", "safety-architecture", "od-nohd", "metrology", "feasibility", "doe", "checklists"],
+  "/architecture": ["control-stack", "optical-chain", "mechanical", "electrical", "software", "vision-loop", "integration", "handshake", "recipes", "interlocks", "configurator"],
+  "/processes": fs.existsSync("app/(app)/processes/page.tsx") && fs.readFileSync("app/(app)/processes/page.tsx", "utf8").includes('id="selection-matrix"') ? ["selection-matrix"] : [],
+};
+const SOURCE_FAMILIES = ["solid-state", "fiber", "gas", "semiconductor", "ultrafast", "specialised"];
+const MATERIAL_TABS = ["absorption", "thermal", "ablation", "regimes"];
+
+describe("Reference Library pages (server render)", () => {
+  it.each(Object.keys(PAGES) as Route[])("%s: one h1, unique ids, no unknown source, breadcrumbs and bookmark", async (route) => {
+    const h = await render(route);
+    expect(h.match(/<h1[\s>]/g)?.length, "h1 count").toBe(1);
+    const ids = idsOf(h);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i), "duplicate ids").toEqual([]);
+    expect(h).not.toContain("unknown source");
+    const crumbs = /<nav aria-label="Breadcrumb"[\s\S]*?<\/nav>/.exec(h)?.[0] ?? "";
+    expect(crumbs).toContain("Reference Library");
+    expect(h).toMatch(/<button type="button" aria-pressed="false"[^>]*>(?:(?!<\/button>)[\s\S])*Bookmark/);
+  });
+
+  it.each(Object.keys(PAGES) as Route[])("%s: page module tracks a reference visit and exports only allowed names", async (route) => {
+    const file = route === "/reference" ? "app/(app)/reference/page.tsx" : `app/(app)${route}/page.tsx`;
+    const src = fs.readFileSync(file, "utf8");
+    expect(src).toContain("<TrackVisit item={ITEM} />");
+    expect(src).toMatch(/kind: "reference" as const/);
+    expect(src).toContain("<BookmarkButton item={ITEM} />");
+    expect(src).not.toMatch(/^"use client"/);
+    const mod = await PAGES[route]();
+    const allowed = new Set(["default", "metadata", "generateMetadata", "generateStaticParams", "dynamic", "revalidate", "dynamicParams"]);
+    expect(Object.keys(mod).filter((k) => !allowed.has(k))).toEqual([]);
+  });
+
+  it("no client component in the area imports a server-only module", () => {
+    const serverOnly = (f: string) => fs.existsSync(f) && /^\s*import\s+["']server-only["']/.test(fs.readFileSync(f, "utf8"));
+    const resolve = (spec: string, from: string): string | null => {
+      let base: string;
+      if (spec.startsWith("@/")) base = spec.slice(2);
+      else if (spec.startsWith(".")) base = `${from.replace(/\/[^/]+$/, "")}/${spec}`.replace(/\/\.\//g, "/");
+      else return null;
+      for (const ext of [".ts", ".tsx", "/index.ts", "/index.tsx", ""]) if (fs.existsSync(base + ext) && fs.statSync(base + ext).isFile()) return base + ext;
+      return null;
+    };
+    const visit = (file: string, seen: Set<string>, chain: string[]): string[] => {
+      if (seen.has(file)) return [];
+      seen.add(file);
+      if (serverOnly(file)) return [chain.concat(file).join(" → ")];
+      const src = fs.readFileSync(file, "utf8");
+      const specs = [...src.matchAll(/^\s*(?:import|export)\s[^;]*?from\s+["']([^"']+)["']/gm)].map((m) => m[1]!);
+      return specs.flatMap((s) => {
+        const r = resolve(s, file);
+        return r && /\.(ts|tsx)$/.test(r) ? visit(r, seen, chain.concat(file)) : [];
+      });
+    };
+    const clients = fs
+      .readdirSync("features/reference")
+      .map((f) => `features/reference/${f}`)
+      .filter((f) => /^"use client"/.test(fs.readFileSync(f, "utf8")));
+    expect(clients.length).toBeGreaterThanOrEqual(4);
+    for (const c of clients) expect(visit(c, new Set(), []), c).toEqual([]);
+  });
+
+  it("glossary page renders every search-index glossary/abbreviation anchor and section#abbreviations", async () => {
+    const h = await render("/reference/glossary");
+    const ids = new Set(idsOf(h));
+    const docs = buildSearchIndex().filter((d) => d.kind === "glossary" || d.kind === "abbreviation");
+    expect(docs.length).toBe(65 + 84);
+    for (const d of docs) expect(ids.has(d.href.split("#")[1]!), d.href).toBe(true);
+    expect(h).toMatch(/<section[^>]*\sid="abbreviations"/);
+  });
+
+  it("formulas and figures pages carry an anchor for every figure id the search index links to", async () => {
+    const f = new Set(idsOf(await render("/reference/formulas")));
+    const g = new Set(idsOf(await render("/reference/figures")));
+    for (const d of buildSearchIndex()) {
+      if (d.href.startsWith("/reference/formulas#")) expect(f.has(d.href.split("#")[1]!), d.href).toBe(true);
+      if (d.href.startsWith("/reference/figures#")) expect(g.has(d.href.split("#")[1]!), d.href).toBe(true);
+    }
+    for (const fig of handbook.figures) expect(g.has(fig.id), fig.id).toBe(true);
+    for (const fig of handbook.figures.filter((x) => x.kind === "equation")) expect(f.has(fig.id), fig.id).toBe(true);
+  });
+
+  it("required labels: decision-tree review banner, §B.6 link, status honesty, external-link note", async () => {
+    const dt = await render("/reference/decision-tree");
+    expect(dt).toContain("Transcribed from the handbook figure — needs review");
+    expect(dt).toContain(decisionTreeData().confirm.slice(0, 40));
+    expect(dt).toContain("/processes#selection-matrix");
+    expect(await render("/reference")).toContain("/processes#selection-matrix");
+    const st = await render("/reference/status");
+    expect(st).toContain(handbook.source.sha256);
+    expect(st).toContain("Not a certification");
+    for (const n of NOT_IMPLEMENTED) expect(st).toContain(n.title);
+    for (const f of REVIEW_FLAGS) expect(st).toContain(`id="flag-${f.id}"`);
+    const src = await render("/reference/sources");
+    expect(src).toContain("not verified by LASERVERSE");
+    const map = await render("/reference/map");
+    const d = technologyMapData();
+    expect(map).toContain(d.intro.slice(0, 40));
+    expect(map).toContain(d.outro.slice(0, 40));
+    expect(map).toContain('aria-expanded="false"');
+    expect(map).toContain("Expand all");
+    for (const n of d.root.children) for (const p of n.parts) expect(map, `${n.label} → part ${p}`).toContain(`href="/learn/part-${p}"`);
+  });
+
+  it("external links open in a new tab with rel=noopener noreferrer", async () => {
+    const src = await render("/reference/sources");
+    const anchors = [...src.matchAll(/<a\s[^>]*href="https?:[^"]+"[^>]*>/g)].map((m) => m[0]);
+    expect(anchors.length).toBeGreaterThanOrEqual(sourcesData().links.length);
+    for (const a of anchors) {
+      expect(a, a).toContain('target="_blank"');
+      expect(a, a).toContain('rel="noopener noreferrer"');
+    }
+  });
+
+  it("links only to routes, anchors, calculators, lessons and files that exist", async () => {
+    const pageIds = new Map<string, Set<string>>();
+    for (const r of Object.keys(PAGES) as Route[]) pageIds.set(r, new Set(idsOf(await render(r))));
+    const learn = new Set<string>(["/learn"]);
+    for (const p of outline.parts) {
+      learn.add(`/learn/${p.id}`);
+      for (const s of p.sections) learn.add(`/learn/${p.id}/${s.slug}`);
+    }
+    const bad: string[] = [];
+    let checked = 0;
+    for (const r of Object.keys(PAGES) as Route[]) {
+      for (const href of hrefsOf(await render(r))) {
+        if (/^https?:/.test(href)) continue;
+        checked++;
+        if (href.startsWith("#")) {
+          if (!pageIds.get(r)!.has(href.slice(1))) bad.push(`${r}: ${href}`);
+          continue;
+        }
+        const u = new URL(href, "https://laserverse.local");
+        const path = u.pathname;
+        const hash = u.hash.slice(1);
+        let ok: boolean;
+        if (path.startsWith("/handbook/")) ok = fs.existsSync(`public${path}`);
+        else if (path.startsWith("/learn")) ok = learn.has(path);
+        else if (path.startsWith("/calculators/")) ok = CALCULATOR_INDEX.has(path.slice("/calculators/".length));
+        else if (path.startsWith("/processes/")) ok = PROCESS_DEFS.some((p) => `/processes/${p.id}` === path);
+        else ok = fs.existsSync(path === "/" ? "app/page.tsx" : `app/(app)${path}/page.tsx`);
+        if (ok && hash) {
+          const known = pageIds.get(path as Route) ?? (FOREIGN_ANCHORS[path] ? new Set(FOREIGN_ANCHORS[path]) : null);
+          ok = Boolean(known?.has(hash));
+        }
+        if (ok && path === "/sources" && u.searchParams.get("family")) ok = SOURCE_FAMILIES.includes(u.searchParams.get("family")!);
+        if (ok && path === "/materials" && u.searchParams.get("tab")) ok = MATERIAL_TABS.includes(u.searchParams.get("tab")!);
+        if (!ok) bad.push(`${r}: ${href}`);
+      }
+    }
+    expect(checked).toBeGreaterThan(200);
+    expect(bad).toEqual([]);
+  });
+
+  it("the decision-tree lesson embed renders the compact tree", async () => {
+    (globalThis as { React?: typeof React }).React = React;
+    const { LessonEmbed } = await import("@/features/learning/LessonEmbed");
+    const h = renderToStaticMarkup(createElement(LessonEmbed, { kind: "decision-tree" }));
+    expect(h).toContain("Laser selection by material class");
+    expect(h).toContain("Open the full decision tree");
+    for (const c of DECISION_TREE.classes) expect(h).toContain(c.label);
   });
 });

@@ -115,7 +115,7 @@ export default function ReferencePage() {
         <SourceRef section="B.10" />
       </p>
 
-      <SectionTitle id="quick-reference" sub="Handbook §27.1 — where to find each topic, and the most-used numbers.">
+      <SectionTitle id="quick-reference" sub="Handbook §27.1 — where to find each topic, the laser families at a glance, typical average power by application and the pulse-duration regimes.">
         Quick reference
       </SectionTitle>
       <div className="grid gap-x-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -125,17 +125,17 @@ export default function ReferencePage() {
         </div>
         <div className="min-w-0">
           <h3 id="power" className="scroll-mt-24 text-[14.5px] font-semibold text-fog-100">
-            Typical average power by application
+            {d.quickRefHeadings.power ?? "Typical power"}
           </h3>
           <HandbookTable t={d.powerByApp} caption={<SourceRef section="27.1" note="≈ values" />} compact />
         </div>
       </div>
       <h3 id="families" className="mt-4 scroll-mt-24 text-[14.5px] font-semibold text-fog-100">
-        Laser families at a glance
+        {d.quickRefHeadings.families ?? "Laser families"}
       </h3>
       <HandbookTable t={d.families} caption={<SourceRef section="27.1" note="≈ values" />} compact />
       <h3 id="regimes" className="mt-4 scroll-mt-24 text-[14.5px] font-semibold text-fog-100">
-        Pulse-duration regimes
+        {d.quickRefHeadings.regimes ?? "Pulse regimes"}
       </h3>
       <HandbookTable t={d.regimes} caption={<SourceRef section="27.1" />} compact />
 
@@ -159,17 +159,20 @@ export default function ReferencePage() {
           </li>
         ))}
         <li className="min-w-0 rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/60 px-4 py-3">
-          <div className="text-[14px] font-semibold text-fog-100">Process selection matrix</div>
-          <div className="mt-0.5 text-[13px] text-fog-300">{linkRefs("§B.6", "b6-")}</div>
+          <div className="text-[14px] font-semibold text-fog-100">{d.selectionMatrix.title}</div>
+          <div className="mt-0.5 text-[13px] text-fog-300">
+            <SourceRef section={d.selectionMatrix.sectionId} />
+          </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Link href="/processes#selection-matrix" className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] px-2.5 py-0.5 text-[12px] text-fog-200 hover:border-teal-400/60 hover:text-teal-100">
-              Process Simulator matrix <ArrowUpRight aria-hidden className="size-3" />
+              Process Simulator — selection matrix <ArrowUpRight aria-hidden className="size-3" />
             </Link>
           </div>
         </li>
       </ul>
       <p className="mt-2 text-[12px] text-fog-500">
-        <SourceRef section="B.4" /> · Platform links point to the LASERVERSE pages that present each item; they are navigation, not handbook content.
+        <SourceRef section="B.4" /> · The handbook&rsquo;s §B.4 list, plus the §B.6 matrix. Platform links point to the LASERVERSE pages that present each item;
+        they are navigation, not handbook content.
       </p>
 
       <SectionTitle id="learning-path" sub="Handbook §B.9 — what to study at each stage, with the handbook's suggested resources.">

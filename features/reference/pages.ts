@@ -13,14 +13,14 @@ export const REFERENCE_PAGES: ReferencePageDef[] = [
     id: "map",
     href: "/reference/map",
     title: "Master Technology Map",
-    short: "The handbook on one tree, from photon to industry, with each branch linked to the Part that develops it.",
+    short: "The handbook on one tree, from photon to industry, with branches linked to the Parts the handbook names for them.",
     sections: ["28.0", "front.laser-technology-hierarchy"],
   },
   {
     id: "decision-tree",
     href: "/reference/decision-tree",
     title: "Laser Selection Decision Tree",
-    short: "Material class → requirement → candidate laser, plus the six-question selection framework.",
+    short: "Material class → requirement → candidate laser, plus the §23.3 process selection framework.",
     sections: ["B.5", "23.3"],
   },
   {

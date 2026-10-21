@@ -51,7 +51,7 @@ export default function DecisionTreePage() {
         <HandbookFigure fig={figure} />
       </div>
 
-      <SectionTitle id="framework" sub="Handbook §23.3 — the questions to answer, in order, before committing to a laser and process.">
+      <SectionTitle id="framework" sub="Handbook §23.3 — the selection questions with the rule for each, the framework figure, and worked selections.">
         Laser process selection framework
       </SectionTitle>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">

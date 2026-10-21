@@ -124,7 +124,12 @@ export function FigureGallery({ figures }: { figures: FigureCard[] }) {
                     <span className="ml-auto font-mono text-[11px] text-fog-500">{f.id}</span>
                   </div>
                   <h3 className="text-[14.5px] font-semibold leading-snug text-fog-100">{f.title ?? f.id}</h3>
-                  {f.alt ? <p className="line-clamp-4 text-[12.5px] leading-snug text-fog-400" title={f.alt}>{f.alt}</p> : null}
+                  {f.alt ? (
+                    <p className="line-clamp-4 text-[12.5px] leading-snug text-fog-400" title={f.alt}>
+                      <span className="text-fog-500">Description (LASERVERSE, not handbook text): </span>
+                      {f.alt}
+                    </p>
+                  ) : null}
                   <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[12.5px]">
                     <Link href={f.sectionHref} className="inline-flex items-center gap-1 text-teal-300 hover:underline">
                       {f.sectionLabel} <ArrowUpRight aria-hidden className="size-3" />

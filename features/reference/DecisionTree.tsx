@@ -38,6 +38,8 @@ export function DecisionTree({ data, compact = false }: { data: DecisionTreeData
   const [view, setView] = useState<View>("guided");
   const cls = data.classes.find((c) => c.id === clsId) ?? null;
   const branch = cls?.branches.find((b) => b.id === branchId) ?? null;
+  // full page: the tree is a top-level section under the page h1; in a lesson it sits inside a section
+  const Heading = compact ? "h3" : "h2";
 
   const pickClass = (id: string) => {
     setClsId(id);
@@ -60,7 +62,7 @@ export function DecisionTree({ data, compact = false }: { data: DecisionTreeData
           <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-300">
             <GitBranch aria-hidden className="size-3.5" /> Decision tree · §B.5
           </div>
-          <h3 className="text-[16.5px] font-semibold text-paper">Laser selection by material class</h3>
+          <Heading className="text-[16.5px] font-semibold text-paper">Laser selection by material class</Heading>
           <p className="mt-1 text-[12.5px] text-fog-400">Transcribed from the handbook figure — needs review.</p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
