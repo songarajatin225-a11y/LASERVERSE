@@ -1,4 +1,5 @@
 import { cn } from "@/components/ui/primitives";
+import { withBase } from "@/lib/basePath";
 
 /**
  * Official TEAL logo (supplied asset, public/brand/teal-logo.webp, 2000 × 450 px, transparent).
@@ -17,7 +18,7 @@ export function TealLogo({ height = 28, className, plate = true }: { height?: nu
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={TEAL_LOGO.src}
+      src={withBase(TEAL_LOGO.src)}
       width={width}
       height={height}
       alt={`${TEAL_NAME} — A TATA Enterprise`}

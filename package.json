@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:pages": "STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/LASERVERSE next build && touch out/.nojekyll",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

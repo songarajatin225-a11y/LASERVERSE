@@ -5,6 +5,7 @@ import { Tex } from "@/components/ui/Tex";
 import { Badge, Callout, cn } from "@/components/ui/primitives";
 import { HandbookChecklist } from "./HandbookChecklist";
 import { linkRefs } from "./linkRefs";
+import { withBase } from "@/lib/basePath";
 
 export { linkRefs };
 
@@ -109,7 +110,7 @@ export function HandbookFigure({ fig }: { fig: Figure | undefined }) {
           <summary className="cursor-pointer select-none hover:text-fog-300">Show the original handbook image</summary>
           <div className="mt-3 overflow-x-auto rounded bg-white p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={fig.file} alt={`Original equation image: ${fig.title ?? fig.id}`} width={fig.width ?? undefined} height={fig.height ?? undefined} loading="lazy" className="h-auto max-h-56 w-auto max-w-full" />
+            <img src={withBase(fig.file)} alt={`Original equation image: ${fig.title ?? fig.id}`} width={fig.width ?? undefined} height={fig.height ?? undefined} loading="lazy" className="h-auto max-h-56 w-auto max-w-full" />
           </div>
         </details>
       </figure>
@@ -120,8 +121,8 @@ export function HandbookFigure({ fig }: { fig: Figure | undefined }) {
     <figure className="my-8" id={`fig-${fig.id}`}>
       <div className={cn("relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--line)] bg-[#fbfbfa] p-4", tallNarrow ? "mx-auto max-w-[340px]" : "")}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={fig.file} alt={fig.alt ?? fig.title ?? "Handbook figure"} width={fig.width ?? undefined} height={fig.height ?? undefined} loading="lazy" className={cn("mx-auto h-auto w-auto max-w-full", tallNarrow ? "max-h-[560px]" : "max-h-[620px]")} />
-        <a href={fig.file} target="_blank" rel="noopener noreferrer" className="absolute right-2 top-2 inline-flex size-7 items-center justify-center rounded bg-black/55 text-white/90 hover:bg-black/75" aria-label={`Open ${fig.title ?? "figure"} full size`}>
+        <img src={withBase(fig.file)} alt={fig.alt ?? fig.title ?? "Handbook figure"} width={fig.width ?? undefined} height={fig.height ?? undefined} loading="lazy" className={cn("mx-auto h-auto w-auto max-w-full", tallNarrow ? "max-h-[560px]" : "max-h-[620px]")} />
+        <a href={withBase(fig.file)} target="_blank" rel="noopener noreferrer" className="absolute right-2 top-2 inline-flex size-7 items-center justify-center rounded bg-black/55 text-white/90 hover:bg-black/75" aria-label={`Open ${fig.title ?? "figure"} full size`}>
           <Maximize2 aria-hidden className="size-3.5" />
         </a>
       </div>

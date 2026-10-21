@@ -25,7 +25,17 @@ npm run start
 npm run test:e2e       # Playwright, against the production build
 ```
 
-No environment variables are required. The platform has no backend services, accounts or AI dependency; progress, bookmarks and checklists are stored in the browser.
+No environment variables are required for a normal build.
+
+## Deployment (GitHub Pages)
+
+`.github/workflows/deploy-pages.yml` builds a fully static export and publishes it with GitHub Pages on every push to `main`:
+
+1. One-time: repository **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. Merge to `main` (or run the workflow manually from the Actions tab once it is on `main`).
+3. The site is served at `https://<owner>.github.io/<repo>/` — for this repository, https://songarajatin225-a11y.github.io/LASERVERSE/
+
+Build the same export locally with `npm run build:pages` (output in `out/`, served under `/LASERVERSE`). The export is controlled by two variables: `STATIC_EXPORT=1` (static output) and `NEXT_PUBLIC_BASE_PATH` (sub-path). Any static host works; Next.js hosts such as Vercel can deploy the repository without either variable. The platform has no backend services, accounts or AI dependency; progress, bookmarks and checklists are stored in the browser.
 
 ## What is inside
 

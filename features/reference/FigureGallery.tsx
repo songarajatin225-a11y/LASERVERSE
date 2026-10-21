@@ -6,6 +6,7 @@ import { ArrowUpRight, Maximize2, Search, Sigma, X } from "lucide-react";
 import { Segmented } from "@/components/ui/controls";
 import { Badge, StatusPill, cn } from "@/components/ui/primitives";
 import type { FigureCard } from "./types";
+import { withBase } from "@/lib/basePath";
 
 type KindFilter = "all" | "diagram" | "equation";
 
@@ -99,7 +100,7 @@ export function FigureGallery({ figures }: { figures: FigureCard[] }) {
                 <div className="relative flex h-52 items-center justify-center bg-[#fbfbfa] p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={f.file}
+                    src={withBase(f.file)}
                     alt={f.alt ?? f.title ?? `Handbook figure ${f.id}`}
                     width={f.width ?? undefined}
                     height={f.height ?? undefined}
@@ -108,7 +109,7 @@ export function FigureGallery({ figures }: { figures: FigureCard[] }) {
                     className="h-full max-h-full w-auto max-w-full object-contain"
                   />
                   <a
-                    href={f.file}
+                    href={withBase(f.file)}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Open ${f.title ?? f.id} full size`}
