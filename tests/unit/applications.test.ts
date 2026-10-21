@@ -28,6 +28,18 @@ describe("application adapters", () => {
     expect(c[1]!.title).toBe("PCB → DataMatrix marking → CO₂ laser → in-line marker");
     expect(c.every((x) => x.steps.length >= 6)).toBe(true);
   });
+  it("links requirements only from explicit sources", () => {
+    const m = applicationMatrix();
+    const pcb = m.find((c) => c.process === "DataMatrix marking")!;
+    expect(pcb.caseRequirement?.caseNumber).toBe(2);
+    expect(pcb.machineRisks?.product).toBe("Laser marking machine");
+    const defence = m.find((c) => c.industry === "Defence" && c.product.startsWith("Optronics"))!;
+    expect(defence.caseRequirement).toBeUndefined();
+    expect(defence.machineRisks).toBeUndefined();
+    const cutter = m.find((c) => c.product === "Cutting machines")!;
+    expect(cutter.machineRisks?.product).toBe("Laser cutting machine");
+    for (const c of m) if (c.caseRequirement) expect(c.caseRequirement.text.length).toBeGreaterThan(10);
+  });
   it("resolves quotes, requirements and industry sections", () => {
     expect(productRequirements().length).toBe(7);
     expect(Object.values(applicationQuotes()).every((s) => s.length > 40)).toBe(true);

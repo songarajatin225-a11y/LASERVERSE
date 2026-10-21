@@ -6,7 +6,7 @@ import { Breadcrumbs, TrackVisit, BookmarkButton } from "@/components/shell/Chro
 import { PageHeader, ClassTag, SectionTitle, Callout } from "@/components/ui/primitives";
 import { SourceRef } from "@/components/ui/SourceRef";
 import { ApplicationExplorer, ProductMaps } from "@/features/applications/ApplicationExplorer";
-import { applicationMatrix, qualityByFamily, caseStudies, productRequirements, explodedMaps, applicationQuotes, INDUSTRY_SECTIONS } from "@/lib/content/applications";
+import { applicationMatrix, qualityByFamily, caseStudies, explodedMaps, applicationQuotes, INDUSTRY_SECTIONS } from "@/lib/content/applications";
 import { hrefFor, labelFor } from "@/lib/content/outline";
 
 export const metadata: Metadata = { title: "Industrial Applications" };
@@ -38,7 +38,7 @@ export default function ApplicationsPage() {
       </Callout>
 
       <Suspense fallback={<div className="h-[640px] animate-pulse rounded-[var(--radius-xl)] bg-ink-800" />}>
-        <ApplicationExplorer chains={applicationMatrix()} quality={qualityByFamily()} cases={cases.map(({ id, number, title, industries }) => ({ id, number, title, industries }))} requirements={productRequirements()} />
+        <ApplicationExplorer chains={applicationMatrix()} quality={qualityByFamily()} cases={cases.map(({ id, number, title, industries }) => ({ id, number, title, industries }))} />
       </Suspense>
 
       <SectionTitle id="case-studies" sub="Handbook §26.2 — eight end-to-end walks from product to machine.">

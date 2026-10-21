@@ -22,6 +22,10 @@ export interface AppChain {
   pulse: string;
   machine: string;
   families: string[];
+  /** requirement stated in a related §26.2 case (same industry and process type), named explicitly */
+  caseRequirement?: { caseId: string; caseNumber: number; caseTitle: string; text: string };
+  /** §23.4 decisive requirements and risks for the machine type, when the type is unambiguous */
+  machineRisks?: { product: string; text: string };
 }
 
 /**
@@ -43,7 +47,38 @@ export function familiesOf(process: string): string[] {
   return [...out];
 }
 
+const PROCESS_WORDS = ["marking", "welding", "cutting", "dicing", "drilling", "cleaning", "soldering"];
+
+/** §23.4 "What differs by product type": machine type → row, only for unambiguous wording. */
+function machineTypeRow(machine: string, industry: string): string | null {
+  const m = machine.toLowerCase();
+  if (industry === "Semiconductor") return "Semiconductor laser equipment";
+  if (/marking|marker|coder|serialisation/.test(m)) return "Laser marking machine";
+  if (/weld/.test(m)) return "Laser welding machine";
+  if (/solder/.test(m)) return "Laser soldering machine";
+  if (/cutting|cutter/.test(m)) return "Laser cutting machine";
+  if (/clean/.test(m)) return "Laser cleaning machine";
+  return null;
+}
+
 export function applicationMatrix(): AppChain[] {
+  const cases = caseStudies();
+  const risks = productRequirements();
+  return applicationMatrixRaw().map((c) => {
+    const words = PROCESS_WORDS.filter((w) => c.process.toLowerCase().includes(w));
+    const k = cases.find((x) => x.industries.includes(c.industry) && words.some((w) => x.title.toLowerCase().includes(w)));
+    const req = k?.steps.find((st) => st.step === "Requirement");
+    const rowName = machineTypeRow(c.machine, c.industry);
+    const row = rowName ? risks.find((r) => r["Product"] === rowName) : undefined;
+    return {
+      ...c,
+      caseRequirement: k && req ? { caseId: k.id, caseNumber: k.number, caseTitle: k.title, text: req.decision } : undefined,
+      machineRisks: row ? { product: row["Product"] ?? "", text: row["Decisive requirements and risks"] ?? "" } : undefined,
+    };
+  });
+}
+
+function applicationMatrixRaw(): AppChain[] {
   const t = getTable("20.0", 1, ["Industry", "Product", "Component", "Material", "Process", "Laser type", "λ", "Avg power", "Pulse", "Machine type"]);
   const seen = new Map<string, number>();
   return tableRecords(t).map((r) => {

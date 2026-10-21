@@ -21,6 +21,8 @@ export interface ChainData {
   pulse: string;
   machine: string;
   families: string[];
+  caseRequirement?: { caseId: string; caseNumber: number; caseTitle: string; text: string };
+  machineRisks?: { product: string; text: string };
 }
 export interface CaseRef {
   id: string;
@@ -33,12 +35,10 @@ export function ApplicationExplorer({
   chains,
   quality,
   cases,
-  requirements,
 }: {
   chains: ChainData[];
   quality: Record<string, string>;
   cases: CaseRef[];
-  requirements: Array<Record<string, string>>;
 }) {
   const params = useSearchParams();
   const router = useRouter();
@@ -67,7 +67,6 @@ export function ApplicationExplorer({
   const list = chains.filter((c) => (!industry || c.industry === industry) && (!q || Object.values(c).join(" ").toLowerCase().includes(q.toLowerCase())));
   const chain = chains.find((c) => c.id === sel) ?? list[0];
   const relatedCases = chain ? cases.filter((k) => k.industries.includes(chain.industry)) : [];
-  const req = chain ? requirements.find((r) => (r["Product"] ?? "").toLowerCase().split(/[ ,/]+/).some((w) => w.length > 3 && `${chain.product} ${chain.industry}`.toLowerCase().includes(w))) : undefined;
 
   const steps: Array<{ label: string; value: string; note?: string; source: string }> = chain
     ? [
@@ -75,10 +74,22 @@ export function ApplicationExplorer({
         { label: "End product", value: chain.product, source: "20.0" },
         { label: "Component", value: chain.component, source: "20.0" },
         { label: "Material", value: chain.material, source: "20.0" },
-        ...(req ? [{ label: "Requirement", value: req["Decisive requirements and risks"] ?? "", note: `decisive requirements for “${req["Product"]}”`, source: "23.4" }] : []),
+        ...(chain.caseRequirement
+          ? [
+              {
+                label: "Requirement",
+                value: chain.caseRequirement.text,
+                note: `stated in related case ${chain.caseRequirement.caseNumber} (${chain.caseRequirement.caseTitle}) — the §20.0 matrix itself states no requirement`,
+                source: "26.2",
+              },
+            ]
+          : []),
         { label: "Process", value: chain.process, source: "20.0" },
         { label: "Laser source", value: `${chain.laser} · ${chain.lambda}`, note: `average power ≈ ${chain.power} · pulse ${chain.pulse}`, source: "20.0" },
         { label: "Machine", value: chain.machine, source: "20.0" },
+        ...(chain.machineRisks
+          ? [{ label: "Machine requirements & risks", value: chain.machineRisks.text, note: `for the product type “${chain.machineRisks.product}”`, source: "23.4" }]
+          : []),
         ...(chain.families.length
           ? [{ label: "Quality metrics", value: chain.families.map((f) => `${f}: ${quality[f]}`).join(" | "), note: "process-family metrics from §10.1 (derived mapping)", source: "10.1" }]
           : []),
