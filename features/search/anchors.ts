@@ -7,12 +7,14 @@ import { slug } from "@/lib/slug";
  * search hit always lands on the row it names.
  */
 export function uniqueSlugs(values: string[]): string[] {
-  const seen = new Map<string, number>();
+  const used = new Set<string>();
   return values.map((v) => {
     const base = slug(v) || "item";
-    const n = (seen.get(base) ?? 0) + 1;
-    seen.set(base, n);
-    return n === 1 ? base : `${base}-${n}`;
+    let id = base;
+    // a natural slug such as "x-2" can collide with a generated suffix; keep counting until free
+    for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+    used.add(id);
+    return id;
   });
 }
 

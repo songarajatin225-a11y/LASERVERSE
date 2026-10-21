@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Search, Loader2, X, RotateCcw, CornerDownLeft } from "lucide-react";
 import { loadSearch, excerpt, tokenizeQuery, KIND_LABEL, type SearchKind, type SearchProvider, type SearchResult, type SearchSegment } from "@/lib/search/engine";
 import { Badge, Button, ClassTag, Kbd, cn } from "@/components/ui/primitives";
@@ -45,7 +45,6 @@ function Marked({ segments }: { segments: SearchSegment[] }) {
 
 export function SearchPage({ totals, total }: { totals: Partial<Record<SearchKind, number>>; total: number }) {
   const params = useSearchParams();
-  const router = useRouter();
   const urlQ = params.get("q") ?? "";
   const urlKindRaw = params.get("kind");
 
@@ -94,15 +93,15 @@ export function SearchPage({ totals, total }: { totals: Partial<Record<SearchKin
     setKinds(nextKinds);
   }, [urlQ, urlKindRaw]);
 
-  const writeUrl = useCallback(
-    (nextQ: string, nextKinds: SearchKind[]) => {
-      const key = queryString(nextQ, nextKinds);
-      if (key === lastWritten.current) return;
-      lastWritten.current = key;
-      router.replace(key ? `/search?${key}` : "/search", { scroll: false });
-    },
-    [router],
-  );
+  // The native History API (integrated with the App Router since Next 14.1, so useSearchParams
+  // stays in sync) updates the address bar without a soft navigation or an RSC request per
+  // keystroke, and without adding history entries.
+  const writeUrl = useCallback((nextQ: string, nextKinds: SearchKind[]) => {
+    const key = queryString(nextQ, nextKinds);
+    if (key === lastWritten.current) return;
+    lastWritten.current = key;
+    window.history.replaceState(null, "", key ? `/search?${key}` : "/search");
+  }, []);
 
   // debounced while typing
   useEffect(() => {
@@ -198,7 +197,7 @@ export function SearchPage({ totals, total }: { totals: Partial<Record<SearchKin
             aria-controls="search-results"
             className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-paper outline-none placeholder:text-fog-500 [&::-webkit-search-cancel-button]:hidden"
           />
-          {status === "loading" ? <Loader2 aria-hidden className="size-4 shrink-0 animate-spin text-fog-500" /> : null}
+          {status === "loading" ? <Loader2 aria-hidden className="size-4 shrink-0 animate-spin text-fog-500 motion-reduce:animate-none" /> : null}
           {q ? (
             <button
               type="button"
@@ -264,99 +263,105 @@ export function SearchPage({ totals, total }: { totals: Partial<Record<SearchKin
       </p>
 
       {/* ------------------------------------------------------ states */}
-      {status === "error" ? (
-        <div role="alert" className="rounded-[var(--radius-lg)] border border-danger/40 bg-danger/[0.06] p-5">
-          <p className="text-[14px] font-semibold text-fog-100">The search index could not be loaded.</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-fog-300">
-            Search needs the static file <code className="font-mono text-fog-200">/search-index.json</code>. Check your connection and try again; every page is still reachable from the
-            sidebar.
-          </p>
-          <Button size="sm" variant="secondary" className="mt-3" onClick={() => setAttempt((a) => a + 1)}>
-            <RotateCcw aria-hidden className="size-3.5" /> Retry
-          </Button>
-        </div>
-      ) : status === "loading" && query ? (
-        <ul aria-busy="true" aria-label="Loading results" className="flex flex-col gap-2">
-          {[0, 1, 2, 3].map((i) => (
-            <li key={i} className="h-[92px] animate-pulse rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/50 motion-reduce:animate-none" />
-          ))}
-        </ul>
-      ) : !query ? (
-        <EmptyState total={total} totals={totals} onPick={runSuggestion} />
-      ) : filtered.length === 0 ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 p-5">
-          <p className="text-[14.5px] font-semibold text-fog-100">
-            {hiddenByFilter ? `No ${kinds.map((k) => KIND_LABEL[k].toLowerCase()).join(" or ")} results for “${query}”.` : `No matches for “${query}”.`}
-          </p>
-          <ul className="mt-2 list-disc pl-5 text-[13px] leading-relaxed text-fog-300">
-            {hiddenByFilter ? <li>{all.length} results in other kinds are hidden by the filter.</li> : null}
-            <li>Check the spelling, or try a shorter word — prefixes match (for example “galv” finds galvo).</li>
-            <li>Try the handbook’s abbreviation or the full term (BPP or beam parameter product).</li>
-            <li>Search matches words, not meaning: use the terms the handbook uses.</li>
-          </ul>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {hiddenByFilter ? (
-              <Button size="sm" variant="secondary" onClick={() => setKinds([])}>
-                Show all kinds
-              </Button>
-            ) : null}
-            <Suggestions onPick={runSuggestion} />
+      {/* always rendered, so the input's aria-controls target exists in every state */}
+      <section id="search-results" aria-labelledby="search-results-heading" className="min-w-0">
+        <h2 id="search-results-heading" className="sr-only">
+          Search results
+        </h2>
+        {status === "error" ? (
+          <div role="alert" className="rounded-[var(--radius-lg)] border border-danger/40 bg-danger/[0.06] p-5">
+            <p className="text-[14px] font-semibold text-fog-100">The search index could not be loaded.</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-fog-300">
+              Search needs the static file <code className="font-mono text-fog-200">/search-index.json</code>. Check your connection and try again; every page is still reachable from the
+              sidebar.
+            </p>
+            <Button size="sm" variant="secondary" className="mt-3" onClick={() => setAttempt((a) => a + 1)}>
+              <RotateCcw aria-hidden className="size-3.5" /> Retry
+            </Button>
           </div>
-        </div>
-      ) : (
-        <div>
-          <p className="mb-2 text-[12.5px] text-fog-400">
-            {filtered.length} result{filtered.length === 1 ? "" : "s"}
-            {kinds.length ? ` in ${kinds.map((k) => KIND_LABEL[k]).join(", ")}` : ""}
-            {all.length === MAX_RESULTS ? " (first matches only)" : ""}
-          </p>
-          <ol id="search-results" ref={listRef} className="flex flex-col gap-2" aria-label="Search results">
-            {shown.map((r, i) => {
-              const cls = KIND_CLASS[r.doc.kind];
-              return (
-                <li key={r.doc.id}>
-                  <Link
-                    href={r.doc.href}
-                    data-idx={i}
-                    onKeyDown={(e) => onResultKey(e, i)}
-                    className="group block rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 px-4 py-3 outline-none transition-colors hover:border-white/15 focus-visible:border-teal-400/70 focus-visible:bg-ink-750"
-                  >
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <Badge tone="fog">{KIND_LABEL[r.doc.kind]}</Badge>
-                      <span className="min-w-0 truncate text-[12px] text-fog-500">{r.doc.location}</span>
-                      <CornerDownLeft aria-hidden className="ml-auto hidden size-3.5 shrink-0 text-fog-500 group-focus-visible:block" />
-                    </div>
-                    <div className="mt-1.5 text-[15px] font-semibold leading-snug text-fog-100 group-hover:text-paper">
-                      <Marked segments={excerpt(r.doc.title, terms, 10_000)} />
-                    </div>
-                    {r.excerpt.length ? (
-                      <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-fog-400">
-                        <Marked segments={r.excerpt} />
-                      </p>
-                    ) : null}
-                    <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-fog-500">
-                      <ClassTag kind={cls} short />
-                      {r.doc.source ? (
-                        <span className="font-mono">
-                          {cls === "handbook" ? "Source" : "Cites"} {r.doc.source}
-                        </span>
-                      ) : null}
-                      <span className="ml-auto max-w-full truncate font-mono text-fog-500/80">{r.doc.href}</span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ol>
-          {filtered.length > shown.length ? (
-            <div className="mt-3 flex justify-center">
-              <Button size="sm" variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>
-                Show more ({filtered.length - shown.length} remaining)
-              </Button>
+        ) : status === "loading" && query ? (
+          <ul aria-busy="true" aria-label="Loading results" className="flex flex-col gap-2">
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} className="h-[92px] animate-pulse rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/50 motion-reduce:animate-none" />
+            ))}
+          </ul>
+        ) : !query ? (
+          <EmptyState total={total} totals={totals} onPick={runSuggestion} />
+        ) : filtered.length === 0 ? (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 p-5">
+            <p className="text-[14.5px] font-semibold text-fog-100">
+              {hiddenByFilter ? `No ${kinds.map((k) => KIND_LABEL[k].toLowerCase()).join(" or ")} results for “${query}”.` : `No matches for “${query}”.`}
+            </p>
+            <ul className="mt-2 list-disc pl-5 text-[13px] leading-relaxed text-fog-300">
+              {hiddenByFilter ? <li>{all.length} results in other kinds are hidden by the filter.</li> : null}
+              <li>Check the spelling, or try a shorter word — prefixes match (for example “galv” finds galvo).</li>
+              <li>Try the handbook’s abbreviation or the full term (BPP or beam parameter product).</li>
+              <li>Search matches words, not meaning: use the terms the handbook uses.</li>
+            </ul>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {hiddenByFilter ? (
+                <Button size="sm" variant="secondary" onClick={() => setKinds([])}>
+                  Show all kinds
+                </Button>
+              ) : null}
+              <Suggestions onPick={runSuggestion} />
             </div>
-          ) : null}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div>
+            <p className="mb-2 text-[12.5px] text-fog-400">
+              {filtered.length} result{filtered.length === 1 ? "" : "s"}
+              {kinds.length ? ` in ${kinds.map((k) => KIND_LABEL[k]).join(", ")}` : ""}
+              {all.length === MAX_RESULTS ? " (first matches only)" : ""}
+            </p>
+            <ol ref={listRef} className="flex flex-col gap-2" aria-label="Search results">
+              {shown.map((r, i) => {
+                const cls = KIND_CLASS[r.doc.kind];
+                return (
+                  <li key={r.doc.id}>
+                    <Link
+                      href={r.doc.href}
+                      data-idx={i}
+                      onKeyDown={(e) => onResultKey(e, i)}
+                      className="group block rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 px-4 py-3 outline-none transition-colors hover:border-white/15 focus-visible:border-teal-400/70 focus-visible:bg-ink-750"
+                    >
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <Badge tone="fog">{KIND_LABEL[r.doc.kind]}</Badge>
+                        <span className="min-w-0 truncate text-[12px] text-fog-500">{r.doc.location}</span>
+                        <CornerDownLeft aria-hidden className="ml-auto hidden size-3.5 shrink-0 text-fog-500 group-focus-visible:block" />
+                      </div>
+                      <div className="mt-1.5 text-[15px] font-semibold leading-snug text-fog-100 group-hover:text-paper">
+                        <Marked segments={excerpt(r.doc.title, terms, 10_000)} />
+                      </div>
+                      {r.excerpt.length ? (
+                        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-fog-400">
+                          <Marked segments={r.excerpt} />
+                        </p>
+                      ) : null}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-fog-500">
+                        <ClassTag kind={cls} short />
+                        {r.doc.source ? (
+                          <span className="font-mono">
+                            {cls === "handbook" ? "Source" : "Cites"} {r.doc.source}
+                          </span>
+                        ) : null}
+                        <span className="ml-auto max-w-full truncate font-mono text-fog-500/80">{r.doc.href}</span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+            {filtered.length > shown.length ? (
+              <div className="mt-3 flex justify-center">
+                <Button size="sm" variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>
+                  Show more ({filtered.length - shown.length} remaining)
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

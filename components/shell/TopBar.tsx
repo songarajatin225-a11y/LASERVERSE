@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDialog } from "@/components/ui/useDialog";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Search, X, Bookmark, Gauge } from "lucide-react";
@@ -32,6 +33,8 @@ function MotionToggle() {
 
 export function TopBar() {
   const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useDialog(open, drawerRef, () => setOpen(false));
   const pathname = usePathname();
   const bookmarks = usePersisted((s) => s.bookmarks.length);
   useEffect(() => setOpen(false), [pathname]);
@@ -98,6 +101,7 @@ export function TopBar() {
               onClick={() => setOpen(false)}
             />
             <motion.div
+              ref={drawerRef}
               className="absolute inset-y-0 left-0 flex w-[min(320px,86vw)] flex-col border-r border-[var(--line)] bg-ink-900"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}

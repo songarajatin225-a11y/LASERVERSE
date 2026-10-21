@@ -37,8 +37,9 @@ The content tests are the integrity backstop: if the handbook is re-ingested and
 | `learning.spec.ts` | lesson completion and bookmarks persist across reloads and appear on Home; quiz feedback |
 | `calculators.spec.ts` | compute, validation message, reset, unit change preserving the physical value |
 | `search.spec.ts` | command palette search and navigation; `/search?q=` results |
+| `search.spec.ts` (keyboard) | command palette keeps Tab focus inside and returns focus on Escape; source detail drawer closes with Escape |
 | `machine.spec.ts` | 3D canvas, component selection and info panel, exploded view, layer toggle, camera reset/preset, conceptual interlock logic; keyboard-operable 2D schematic; WebGL-unavailable fallback (WebGL denied via an init script); `?select=` deep link |
-| `mobile.spec.ts` | no horizontal overflow on key pages at phone width; navigation drawer; reduced-motion landing |
+| `mobile.spec.ts` | no horizontal overflow on key pages at phone width; navigation drawer opens, navigates and closes with Escape; reduced-motion landing (mobile project only) |
 
 ## Visual review
 

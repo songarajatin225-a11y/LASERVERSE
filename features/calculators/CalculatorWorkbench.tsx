@@ -123,7 +123,7 @@ function OutputValue({ o, value }: { o: CalcOutputDef; value: number | string | 
 }
 
 /**
- * `embedded` renders the workbench inside another page: the title becomes an h2 and the
+ * `embedded` renders the workbench inside another page: the title becomes an h3 and the
  * calculator is not recorded in recent activity or offered as a separate bookmark.
  */
 export function CalculatorWorkbench({ id, embedded = false }: { id: string; embedded?: boolean }) {
@@ -208,11 +208,11 @@ export function CalculatorWorkbench({ id, embedded = false }: { id: string; embe
             <ClassTag kind={def.classification} />
           </div>
           {embedded ? (
-            <h2 className="text-balance text-[clamp(1.3rem,2.2vw,1.8rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">
+            <h3 className="text-balance text-[clamp(1.3rem,2.2vw,1.8rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">
               <Link href={`/calculators/${def.id}`} className="hover:text-teal-100">
                 {def.title}
               </Link>
-            </h2>
+            </h3>
           ) : (
             <h1 className="text-balance text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-tight tracking-[-0.02em] text-paper">{def.title}</h1>
           )}

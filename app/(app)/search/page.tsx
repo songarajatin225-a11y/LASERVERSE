@@ -60,8 +60,8 @@ export default function SearchRoute() {
             </p>
           </Callout>
           <p className="text-[12px] leading-relaxed text-fog-500">
-            Each result carries the class of the text it shows: handbook text, a derived calculator, or a platform description of a tool (which cites, but does not
-            quote, the handbook).
+            Each result carries the class of the text it shows: handbook text, a derived calculator, or a description written for LASERVERSE — of a tool, machine
+            component, assessment, figure or equation image — which cites, but does not quote, the handbook.
           </p>
         </aside>
       </div>

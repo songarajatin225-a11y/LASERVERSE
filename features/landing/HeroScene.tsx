@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Edges, Environment, Html, Lightformer, Line } from "@react-three/drei";
+import { Edges, Environment, Lightformer, Line } from "@react-three/drei";
 import type { Line2 } from "three-stdlib";
 import * as THREE from "three";
 import type { MotionValue } from "framer-motion";
@@ -409,28 +409,39 @@ function SpotLight({ s }: { s: React.MutableRefObject<Shared> }) {
   return <pointLight ref={ref} position={[PLATE_X - 0.5, 0, 0.4]} intensity={0} distance={3} color="#ffb070" />;
 }
 
-function MachineOutline({ s }: { s: React.MutableRefObject<Shared> }) {
+const OUTLINE: Array<{ p: V3; s: V3; label: string }> = [
+  { p: [-4.45, 0, 0], s: [4.6, 1.9, 1.9], label: "Laser source" },
+  { p: [-0.7, 0, 0], s: [3.4, 0.6, 0.6], label: "Beam delivery" },
+  { p: [1.2, 0.2, 0], s: [1.2, 2.2, 2.0], label: "Optics & scan head" },
+  { p: [4.35, -1.75, 0], s: [1.6, 0.4, 3.4], label: "Workpiece & fixture" },
+  { p: [0.4, -0.1, 0], s: [14.6, 4.6, 5.0], label: "Class 1 enclosure · controls · safety" },
+];
+
+/**
+ * Wireframe machine blocks. Their labels are plain DOM elements in an overlay next to the
+ * canvas (see HeroScene), positioned here by projecting each anchor every frame — no DOM
+ * is portalled into the canvas tree, which keeps route changes free of teardown races.
+ */
+function MachineOutline({ s, labels }: { s: React.MutableRefObject<Shared>; labels: React.MutableRefObject<Array<HTMLDivElement | null>> }) {
   const g = useRef<THREE.Group>(null);
-  const labels = useRef<Array<HTMLDivElement | null>>([]);
   const mats = useRef<THREE.MeshBasicMaterial[]>([]);
-  const boxes: Array<{ p: V3; s: V3; label: string }> = [
-    { p: [-4.45, 0, 0], s: [4.6, 1.9, 1.9], label: "Laser source" },
-    { p: [-0.7, 0, 0], s: [3.4, 0.6, 0.6], label: "Beam delivery" },
-    { p: [1.2, 0.2, 0], s: [1.2, 2.2, 2.0], label: "Optics & scan head" },
-    { p: [4.35, -1.75, 0], s: [1.6, 0.4, 3.4], label: "Workpiece & fixture" },
-    { p: [0.4, -0.1, 0], s: [14.6, 4.6, 5.0], label: "Class 1 enclosure · controls · safety" },
-  ];
-  useFrame(() => {
+  const v = useMemo(() => new THREE.Vector3(), []);
+  useFrame(({ camera, size }) => {
     const m = pl(s.current.c, K.machine);
     if (g.current) g.current.visible = m > 0.01;
     mats.current.forEach((mat) => (mat.opacity = 0.04 * m));
-    labels.current.forEach((el) => {
-      if (el) el.style.opacity = String(m);
+    OUTLINE.forEach((b, i) => {
+      const el = labels.current[i];
+      if (!el) return;
+      v.set(b.p[0], b.p[1] + b.s[1] / 2 + 0.25, b.p[2]).project(camera);
+      const behind = v.z > 1;
+      el.style.opacity = behind ? "0" : String(m);
+      el.style.transform = `translate(${((v.x * 0.5 + 0.5) * size.width).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * size.height).toFixed(1)}px) translate(-50%, -50%)`;
     });
   });
   return (
     <group ref={g}>
-      {boxes.map((b, i) => (
+      {OUTLINE.map((b, i) => (
         <mesh key={b.label} position={b.p}>
           <boxGeometry args={b.s} />
           <meshBasicMaterial
@@ -443,17 +454,6 @@ function MachineOutline({ s }: { s: React.MutableRefObject<Shared> }) {
             depthWrite={false}
           />
           <Edges color="#59cec7" />
-          <Html position={[0, b.s[1] / 2 + 0.25, 0]} center zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
-            <div
-              ref={(el) => {
-                labels.current[i] = el;
-              }}
-              style={{ opacity: 0 }}
-              className="whitespace-nowrap rounded-full border border-teal-400/40 bg-ink-900/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-teal-100"
-            >
-              {b.label}
-            </div>
-          </Html>
         </mesh>
       ))}
     </group>
@@ -505,7 +505,9 @@ export default function HeroScene({ chapter, motion, active }: { chapter: Motion
     });
   }, [chapter]);
 
+  const labels = useRef<Array<HTMLDivElement | null>>([]);
   return (
+    <div className="absolute inset-0">
     <Canvas
       frameloop={!active ? "never" : motion ? "always" : "demand"}
       dpr={[1, 1.6]}
@@ -529,7 +531,7 @@ export default function HeroScene({ chapter, motion, active }: { chapter: Motion
       <Beam s={shared} />
       <Lens />
       <Plate s={shared} />
-      <MachineOutline s={shared} />
+      <MachineOutline s={shared} labels={labels} />
       <mesh position={[0, -2.3, 0]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#070b11" roughness={0.9} metalness={0.1} />
@@ -538,5 +540,20 @@ export default function HeroScene({ chapter, motion, active }: { chapter: Motion
       <Rig s={shared} />
       <Ticker chapter={chapter} motion={motion} />
     </Canvas>
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        {OUTLINE.map((b, i) => (
+          <div
+            key={b.label}
+            ref={(el) => {
+              labels.current[i] = el;
+            }}
+            style={{ opacity: 0, position: "absolute", left: 0, top: 0 }}
+            className="whitespace-nowrap rounded-full border border-teal-400/40 bg-ink-900/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-teal-100"
+          >
+            {b.label}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

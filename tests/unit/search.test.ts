@@ -1,115 +1,166 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import * as React from "react";
+import { createElement, type ComponentType } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
 import { buildSearchIndex, searchIndexSource, SEARCH_INDEX_VERSION } from "@/lib/search/buildIndex";
 import { LocalSearch, KIND_LABEL, type SearchDoc, type SearchKind } from "@/lib/search/engine";
-import { handbook, handbookOutline, allSections, getParts, getTable } from "@/lib/content/handbook";
-import { CALCULATORS, CALCULATOR_INDEX } from "@/features/calculators/definitions";
+import { handbook, allSections, getParts, getSection, getTable } from "@/lib/content/handbook";
+import { CALCULATORS } from "@/features/calculators/definitions";
 import { QUIZZES } from "@/content/assessments/questions";
 import { PROCESS_DEFS } from "@/lib/content/processes";
-import { COMPONENTS, COMPONENT_INDEX } from "@/features/machine-explorer/machineData";
+import { COMPONENTS } from "@/features/machine-explorer/machineData";
 import { applicationMatrix, caseStudies } from "@/lib/content/applications";
 import { sourceCatalogue } from "@/lib/content/sources";
 import { symptomCards, weldDefectCards } from "@/lib/content/troubleshooting";
-import { cellText } from "@/lib/content/schema";
+import { glossaryData } from "@/lib/content/reference";
 import { slug } from "@/lib/slug";
 import { NAV_ITEMS } from "@/lib/nav";
-import { uniqueSlugs, glossaryAnchors, abbreviationAnchors } from "@/features/search/anchors";
+import { uniqueSlugs } from "@/features/search/anchors";
 import { KIND_ORDER, KIND_CLASS } from "@/features/search/kinds";
 import { GET } from "@/app/search-index.json/route";
+
+// The vitest transform compiles JSX to React.createElement (tsconfig keeps "jsx": "preserve"
+// for Next), so the page modules rendered below need React as a global.
+vi.stubGlobal("React", React);
+
+// Outside Next there is no search-params context; give client components a real one.
+const nav = vi.hoisted(() => ({ search: "" }));
+vi.mock("next/navigation", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/navigation")>();
+  return { ...actual, useSearchParams: () => new URLSearchParams(nav.search) };
+});
+
+const ROOT = path.resolve(__dirname, "../..");
+const APP = path.join(ROOT, "app");
+const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
 
 const docs = buildSearchIndex();
 const engine = new LocalSearch(docs);
 const byKind = (k: SearchKind) => docs.filter((d) => d.kind === k);
 
-/* ------------------------------------------------------------------ route patterns */
-const ARCH_ANCHORS = ["control-stack", "optical-chain", "mechanical", "electrical", "software", "vision-loop", "integration", "handshake", "recipes", "interlocks", "configurator"];
-const SAFETY_ANCHORS = ["classes", "hazards", "standards", "safety-architecture", "od-nohd", "metrology", "feasibility", "doe", "checklists"];
-const TABS: Record<string, string[]> = {
-  "/physics-lab": ["photon", "wave", "levels", "cavity", "pulse"],
-  "/beam-optics": ["beam", "components", "materials"],
-  "/materials": ["absorption", "thermal", "ablation", "regimes"],
-};
-const REFERENCE_PAGES = ["glossary", "formulas", "figures", "map", "decision-tree", "status", "sources"];
+/* ================================================================== the app's real routes */
+interface Route {
+  pattern: string;
+  re: RegExp;
+  file: string;
+  dynamic: boolean;
+}
 
-const outline = handbookOutline();
-const learnPaths = new Set(["/learn", ...outline.flatMap((p) => [p.href, ...p.sections.map((s) => s.href)])]);
-const glossaryIds = new Set([
-  ...glossaryAnchors(getTable("B.1", 1, ["Term"]).rows.map((r) => cellText(r[0]))),
-  ...abbreviationAnchors(getTable("B.2", 1, ["Abbreviation"]).rows.map((r) => cellText(r[0]))),
-]);
-const equationIds = new Set(handbook.figures.filter((f) => f.kind === "equation").map((f) => f.id));
-const diagramIds = new Set(handbook.figures.filter((f) => f.kind === "diagram").map((f) => f.id));
-const troubleIds = new Set([...symptomCards(), ...weldDefectCards()].map((c) => c.id));
-const chainIds = new Set(applicationMatrix().map((c) => c.id));
-const caseIds = new Set(caseStudies().map((c) => c.id));
+/** Every page.tsx under app/, as Next resolves it: route groups dropped, [param] segments dynamic. */
+function pageRoutes(): Route[] {
+  const out: Route[] = [];
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const walk = (dir: string, segs: string[]) => {
+    for (const name of readdirSync(dir)) {
+      const p = path.join(dir, name);
+      if (statSync(p).isDirectory()) {
+        if (name.startsWith("_") || name.startsWith("@")) continue; // private folders, parallel slots
+        walk(p, /^\(.+\)$/.test(name) ? segs : [...segs, name]);
+      } else if (/^page\.[jt]sx?$/.test(name)) {
+        const body = segs.map((s) => `/${/^\[\.\.\..+\]$/.test(s) ? ".+" : /^\[.+\]$/.test(s) ? "[^/]+" : esc(s)}`).join("");
+        out.push({ pattern: `/${segs.join("/")}`, re: new RegExp(`^${body || "/"}$`), file: p, dynamic: segs.some((s) => s.startsWith("[")) });
+      }
+    }
+  };
+  walk(APP, []);
+  return out;
+}
+
+type PageModule = { default: ComponentType; generateStaticParams?: () => Array<Record<string, string>> | Promise<Array<Record<string, string>>> };
+const loadPage = (file: string) => import(/* @vite-ignore */ file) as Promise<PageModule>;
+
+const ROUTES = pageRoutes();
+const routeFor = (pathname: string) => ROUTES.find((r) => r.re.test(pathname));
+/** Concrete paths of every dynamic route, from the page's own generateStaticParams. */
+const concrete = new Set<string>();
+/** DOM ids rendered by each static page the index deep-links into with #anchor. */
+const renderedIds = new Map<string, Map<string, number>>();
+
+/** Anchored paths linked by the index, e.g. /architecture, /reference/glossary. */
+const anchoredPaths = [...new Set(docs.filter((d) => d.href.includes("#")).map((d) => new URL(d.href, "http://x").pathname))];
+
+beforeAll(async () => {
+  for (const r of ROUTES.filter((x) => x.dynamic)) {
+    const mod = await loadPage(r.file);
+    expect(mod.generateStaticParams, `${r.pattern} has generateStaticParams`).toBeTypeOf("function");
+    for (const p of await mod.generateStaticParams!()) {
+      concrete.add(r.pattern.replace(/\[([^\]]+)\]/g, (_, k: string) => encodeURIComponent(p[k] ?? "")));
+    }
+  }
+  for (const pathname of anchoredPaths) {
+    const r = routeFor(pathname);
+    if (!r || r.dynamic) continue; // reported by the route test
+    const mod = await loadPage(r.file);
+    const html = renderToStaticMarkup(createElement(mod.default));
+    const ids = new Map<string, number>();
+    for (const m of html.matchAll(/\sid="([^"]*)"/g)) {
+      const id = m[1]!.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      ids.set(id, (ids.get(id) ?? 0) + 1);
+    }
+    renderedIds.set(pathname, ids);
+  }
+}, 60_000);
+
+/* ================================================================== query parameters */
+/** Tab ids of a lab, read from the component's own TABS constant. */
+function tabIds(rel: string): Set<string> {
+  const block = /const TABS\s*=\s*\[([\s\S]*?)\];/.exec(read(rel))?.[1];
+  if (!block) throw new Error(`no TABS constant in ${rel}`);
+  return new Set([...block.matchAll(/\bid:\s*"([^"]+)"/g)].map((m) => m[1]!));
+}
+
 const sources = new Map(sourceCatalogue().map((e) => [e.id, e]));
-const quizIds = new Set(QUIZZES.map((q) => q.id));
-const processIds = new Set<string>(PROCESS_DEFS.map((p) => p.id));
+interface QuerySpec {
+  /** the client component that reads the parameters, and the page that renders it */
+  component: string;
+  page: string;
+  params: Record<string, Set<string>>;
+}
+const QUERY: Record<string, QuerySpec> = {
+  "/physics-lab": { component: "features/physics-lab/PhysicsLabTabs.tsx", page: "app/(app)/physics-lab/page.tsx", params: { tab: tabIds("features/physics-lab/PhysicsLabTabs.tsx") } },
+  "/beam-optics": { component: "features/beam-optics/BeamOpticsTabs.tsx", page: "app/(app)/beam-optics/page.tsx", params: { tab: tabIds("features/beam-optics/BeamOpticsTabs.tsx") } },
+  "/materials": { component: "features/materials/MaterialsLab.tsx", page: "app/(app)/materials/page.tsx", params: { tab: tabIds("features/materials/MaterialsLab.tsx") } },
+  "/machine": { component: "features/machine-explorer/MachineExplorer.tsx", page: "app/(app)/machine/page.tsx", params: { select: new Set(COMPONENTS.map((c) => c.id)) } },
+  "/applications": { component: "features/applications/ApplicationExplorer.tsx", page: "app/(app)/applications/page.tsx", params: { chain: new Set(applicationMatrix().map((c) => c.id)) } },
+  "/sources": {
+    component: "features/sources/SourceExplorer.tsx",
+    page: "app/(app)/sources/page.tsx",
+    params: { family: new Set([...sources.values()].map((e) => e.family)), source: new Set(sources.keys()), view: new Set(["wavelengths"]) },
+  },
+};
 
-/** Returns null when the href resolves to a known route (and known anchor / query values), else a reason. */
+/** Returns null when the href resolves to an existing page (and a rendered anchor / accepted query value), else the reason. */
 function routeProblem(href: string): string | null {
   if (!href.startsWith("/") || href.startsWith("//")) return "not internal";
   const u = new URL(href, "http://laserverse.local");
-  const path = u.pathname;
-  const hash = decodeURIComponent(u.hash.slice(1));
-  const q = u.searchParams;
-  const onlyParams = (...allowed: string[]) => [...q.keys()].every((k) => allowed.includes(k));
-  const noExtras = () => (u.search === "" && hash === "" ? null : "unexpected query or anchor");
+  if (`${u.pathname}${u.search}${u.hash}` !== href) return "href is not in canonical (encoded) form";
+  const r = routeFor(u.pathname);
+  if (!r) return `no page file for ${u.pathname}`;
+  if (r.dynamic && !concrete.has(u.pathname)) return `${u.pathname} is not generated by ${r.pattern} generateStaticParams`;
 
-  if (path === "/" || path === "/home" || path === "/search") return noExtras();
-  if (path.startsWith("/learn")) return learnPaths.has(path) ? noExtras() : "unknown lesson";
-  if (path === "/reference") return noExtras();
-  if (path.startsWith("/reference/")) {
-    const page = path.slice("/reference/".length);
-    if (!REFERENCE_PAGES.includes(page)) return "unknown reference page";
-    if (u.search) return "unexpected query";
-    if (!hash) return null;
-    if (page === "glossary") return glossaryIds.has(hash) ? null : `unknown glossary anchor ${hash}`;
-    if (page === "formulas") return equationIds.has(hash) ? null : `unknown equation ${hash}`;
-    if (page === "figures") return diagramIds.has(hash) ? null : `unknown figure ${hash}`;
-    return "unexpected anchor";
+  if (u.search) {
+    const spec = QUERY[u.pathname];
+    if (!spec) return `query on a page that reads none: ${u.search}`;
+    for (const [k, v] of u.searchParams) {
+      const allowed = spec.params[k];
+      if (!allowed) return `parameter ${k} is not read by ${spec.component}`;
+      if (!allowed.has(v)) return `bad ${k}=${v}`;
+    }
+    const src = u.searchParams.get("source");
+    if (src !== null && sources.get(src)?.family !== u.searchParams.get("family")) return `source ${src} is not in family ${u.searchParams.get("family")}`;
   }
-  if (path === "/architecture") return u.search === "" && (!hash || ARCH_ANCHORS.includes(hash)) ? null : `bad architecture anchor ${hash}`;
-  if (path === "/safety") return u.search === "" && (!hash || SAFETY_ANCHORS.includes(hash)) ? null : `bad safety anchor ${hash}`;
-  if (path === "/troubleshooting") return u.search === "" && (!hash || troubleIds.has(hash)) ? null : `bad troubleshooting anchor ${hash}`;
-  if (path === "/machine") {
-    const sel = q.get("select");
-    return onlyParams("select") && !hash && (sel === null || COMPONENT_INDEX.has(sel)) ? null : `bad component ${sel}`;
+  if (u.hash) {
+    const id = decodeURIComponent(u.hash.slice(1));
+    const ids = renderedIds.get(u.pathname);
+    if (!ids) return `anchor on a page that was not rendered: ${u.pathname}`;
+    if (!ids.has(id)) return `${u.pathname} renders no element with id "${id}"`;
   }
-  if (path === "/applications") {
-    const chain = q.get("chain");
-    return onlyParams("chain") && !hash && (chain === null || chainIds.has(chain)) ? null : `bad chain ${chain}`;
-  }
-  const caseMatch = /^\/applications\/(case-\d+)$/.exec(path);
-  if (caseMatch) return caseIds.has(caseMatch[1]!) ? noExtras() : "unknown case";
-  if (path === "/calculators" || path === "/assessments" || path === "/processes") return noExtras();
-  const calc = /^\/calculators\/([^/]+)$/.exec(path);
-  if (calc) return CALCULATOR_INDEX.has(calc[1]!) ? noExtras() : `unknown calculator ${calc[1]}`;
-  const quiz = /^\/assessments\/([^/]+)$/.exec(path);
-  if (quiz) return quizIds.has(quiz[1]!) ? noExtras() : `unknown quiz ${quiz[1]}`;
-  const proc = /^\/processes\/([^/]+)$/.exec(path);
-  if (proc) return processIds.has(proc[1]!) ? noExtras() : `unknown process ${proc[1]}`;
-  if (path === "/sources") {
-    if (!onlyParams("family", "source", "view") || hash) return "unexpected sources params";
-    const view = q.get("view");
-    if (view !== null && view !== "wavelengths") return `bad view ${view}`;
-    const id = q.get("source");
-    const fam = q.get("family");
-    if (id !== null) {
-      const e = sources.get(id);
-      if (!e) return `unknown source ${id}`;
-      if (fam !== e.family) return `source ${id} is not in family ${fam}`;
-    } else if (fam !== null && ![...sources.values()].some((e) => e.family === fam)) return `unknown family ${fam}`;
-    return null;
-  }
-  const tabs = TABS[path];
-  if (tabs) {
-    const tab = q.get("tab");
-    return onlyParams("tab") && !hash && (tab === null || tabs.includes(tab)) ? null : `bad tab ${tab}`;
-  }
-  return "unknown route";
+  return null;
 }
 
-/* ------------------------------------------------------------------ tests */
+/* ================================================================== tests */
 describe("search index", () => {
   it("has documents of every kind, with counts tied to the adapters", () => {
     expect([...KIND_ORDER].sort()).toEqual(Object.keys(KIND_LABEL).sort());
@@ -120,17 +171,17 @@ describe("search index", () => {
     expect(byKind("part").length).toBe(getParts().length);
     expect(byKind("glossary").length).toBe(getTable("B.1", 1).rows.length);
     expect(byKind("abbreviation").length).toBe(getTable("B.2", 1).rows.length);
-    expect(byKind("formula").length).toBe(equationIds.size);
-    expect(byKind("figure").length).toBe(diagramIds.size);
+    expect(byKind("formula").length).toBe(handbook.figures.filter((f) => f.kind === "equation").length);
+    expect(byKind("figure").length).toBe(handbook.figures.filter((f) => f.kind === "diagram").length);
     expect(byKind("calculator").length).toBe(CALCULATORS.length);
     expect(byKind("source").length).toBe(sources.size);
-    expect(byKind("application").length).toBe(chainIds.size + caseIds.size);
-    expect(byKind("troubleshooting").length).toBe(troubleIds.size);
+    expect(byKind("application").length).toBe(applicationMatrix().length + caseStudies().length);
+    expect(byKind("troubleshooting").length).toBe(symptomCards().length + weldDefectCards().length);
     expect(byKind("component").length).toBe(COMPONENTS.length);
     expect(byKind("quiz").length).toBe(QUIZZES.length);
   });
 
-  it("has unique ids and non-empty titles and text", () => {
+  it("has unique ids and non-empty titles, text and locations", () => {
     expect(new Set(docs.map((d) => d.id)).size).toBe(docs.length);
     for (const d of docs) {
       expect(d.title.trim().length, d.id).toBeGreaterThan(0);
@@ -139,30 +190,88 @@ describe("search index", () => {
     }
   });
 
-  it("links every document to a known internal route", () => {
+  it("reads the routes from app/ and every dynamic route's generateStaticParams", () => {
+    // sanity: the filesystem scan sees the routes the index depends on
+    for (const p of ["/", "/home", "/search", "/learn/[part]/[section]", "/reference/glossary", "/applications/[id]", "/calculators/[id]", "/processes/[id]"]) {
+      expect(ROUTES.some((r) => r.pattern === p), p).toBe(true);
+    }
+    expect(concrete.has("/calculators/fluence")).toBe(true);
+    expect(concrete.has("/applications/case-1")).toBe(true);
+    expect(anchoredPaths.sort()).toEqual(["/architecture", "/reference/figures", "/reference/formulas", "/reference/glossary", "/safety", "/troubleshooting"]);
+    for (const p of anchoredPaths) expect(renderedIds.get(p)?.size ?? 0, p).toBeGreaterThan(0);
+  });
+
+  it("checks query parameters against the components that read them", () => {
+    for (const [pathname, spec] of Object.entries(QUERY)) {
+      const src = read(spec.component);
+      for (const k of Object.keys(spec.params)) expect(src, `${spec.component} reads ?${k}=`).toMatch(new RegExp(`params\\.get\\("${k}"\\)`));
+      const name = path.basename(spec.component, ".tsx");
+      expect(read(spec.page), `${spec.page} renders ${name}`).toMatch(new RegExp(`<${name}\\b`));
+      expect(routeFor(pathname)?.dynamic, pathname).toBe(false);
+    }
+    // the ids the explorers look up come from the same adapters the pages pass them
+    expect(read("app/(app)/applications/page.tsx")).toMatch(/chains=\{applicationMatrix\(\)\}/);
+    expect(read("app/(app)/sources/page.tsx")).toMatch(/sourceCatalogue\(\)/);
+    expect(read("features/machine-explorer/MachineExplorer.tsx")).toMatch(/COMPONENT_INDEX\.has\(sel\)/);
+    expect(read("features/sources/SourceExplorer.tsx")).toMatch(/getElementById\(`source-\$\{s\}`\)/);
+  });
+
+  it("links every document to an existing page, anchor and query value", () => {
     const problems = docs.map((d) => [d.id, d.href, routeProblem(d.href)] as const).filter(([, , p]) => p !== null);
     expect(problems).toEqual([]);
     for (const n of NAV_ITEMS) expect(docs.some((d) => d.href === n.href), n.href).toBe(true);
   });
 
+  it("lands each deep-linked anchor on exactly one element", () => {
+    const repeated = docs
+      .filter((d) => d.href.includes("#"))
+      .map((d) => {
+        const u = new URL(d.href, "http://x");
+        return [d.href, renderedIds.get(u.pathname)?.get(decodeURIComponent(u.hash.slice(1))) ?? 0] as const;
+      })
+      .filter(([, n]) => n !== 1);
+    expect(repeated).toEqual([]);
+  });
+
+  it("detects a broken route, anchor or query value", () => {
+    expect(routeProblem("/nowhere")).toMatch(/no page file/);
+    expect(routeProblem("/calculators/not-a-calculator")).toMatch(/generateStaticParams/);
+    expect(routeProblem("/architecture#not-an-anchor")).toMatch(/renders no element/);
+    expect(routeProblem("/reference/glossary#term-not-a-term")).toMatch(/renders no element/);
+    expect(routeProblem("/physics-lab?tab=nope")).toMatch(/bad tab/);
+    expect(routeProblem("/physics-lab?view=2d")).toMatch(/not read/);
+    expect(routeProblem("/home?q=1")).toMatch(/reads none/);
+    expect(routeProblem("/learn/part-9/9-2")).toBeNull();
+  });
+
   it("covers every tool deep link named in the brief", () => {
     const hrefs = new Set(docs.map((d) => d.href));
-    for (const a of ARCH_ANCHORS) expect(hrefs.has(`/architecture#${a}`), a).toBe(true);
-    for (const a of SAFETY_ANCHORS) expect(hrefs.has(`/safety#${a}`), a).toBe(true);
-    for (const [path, tabs] of Object.entries(TABS)) for (const t of tabs) expect(hrefs.has(`${path}?tab=${t}`), `${path}?tab=${t}`).toBe(true);
+    const brief: Record<string, string[]> = {
+      "/architecture#": ["control-stack", "optical-chain", "mechanical", "electrical", "software", "vision-loop", "integration", "handshake", "recipes", "interlocks", "configurator"],
+      "/safety#": ["classes", "hazards", "standards", "safety-architecture", "od-nohd", "metrology", "feasibility", "doe", "checklists"],
+      "/physics-lab?tab=": ["photon", "wave", "levels", "cavity", "pulse"],
+      "/beam-optics?tab=": ["beam", "components", "materials"],
+      "/materials?tab=": ["absorption", "thermal", "ablation", "regimes"],
+      "/reference/": ["glossary", "formulas", "figures", "map", "decision-tree", "status", "sources"],
+    };
+    for (const [prefix, ids] of Object.entries(brief)) for (const id of ids) expect(hrefs.has(`${prefix}${id}`), `${prefix}${id}`).toBe(true);
     for (const p of PROCESS_DEFS) expect(hrefs.has(`/processes/${p.id}`), p.id).toBe(true);
     for (const c of CALCULATORS) expect(hrefs.has(`/calculators/${c.id}`), c.id).toBe(true);
     for (const c of COMPONENTS) expect(hrefs.has(`/machine?select=${c.id}`), c.id).toBe(true);
+    for (const q of QUIZZES) expect(hrefs.has(`/assessments/${q.id}`), q.id).toBe(true);
   });
 
-  it("uses the same anchors as the troubleshooting page and the glossary dedupe rule", () => {
-    const symptom = docs.find((d) => d.id === "troubleshooting:low-power");
-    expect(symptom?.href).toBe(`/troubleshooting#${slug("Low power")}`);
-    const weld = docs.find((d) => d.title === "Humping");
-    expect(weld?.href).toBe("/troubleshooting#weld-humping");
+  it("uses the glossary page's anchors and the troubleshooting page's card ids", () => {
+    const { terms, abbreviations } = glossaryData();
+    expect(byKind("glossary").map((d) => d.href)).toEqual(terms.map((t) => `/reference/glossary#${t.anchor}`));
+    expect(byKind("abbreviation").map((d) => d.href)).toEqual(abbreviations.map((a) => `/reference/glossary#${a.anchor}`));
     expect(docs.find((d) => d.title === "Rayleigh range" && d.kind === "glossary")?.href).toBe("/reference/glossary#term-rayleigh-range");
     expect(docs.find((d) => d.title === "BPP" && d.kind === "abbreviation")?.href).toBe("/reference/glossary#abbr-bpp");
     expect(uniqueSlugs(["Spot size", "spot-size", "Spot  size", "M²"])).toEqual(["spot-size", "spot-size-2", "spot-size-3", "m2"]);
+
+    expect(docs.find((d) => d.id === "troubleshooting:low-power")?.href).toBe(`/troubleshooting#${slug("Low power")}`);
+    expect(docs.find((d) => d.kind === "troubleshooting" && d.title === "Humping")?.href).toBe("/troubleshooting#weld-humping");
+    expect(byKind("troubleshooting").map((d) => d.href)).toEqual([...symptomCards(), ...weldDefectCards()].map((c) => `/troubleshooting#${c.id}`));
   });
 
   it("cites handbook sections as §id · p.N", () => {
@@ -180,6 +289,58 @@ describe("search index", () => {
     expect(body.generatedFrom).toBe(searchIndexSource());
     expect(body.generatedFrom).toMatch(/^[0-9a-f]{64}$/);
     expect(body.docs.length).toBe(docs.length);
+    expect(read("app/search-index.json/route.ts")).toMatch(/export const dynamic = "force-static"/);
+  });
+});
+
+describe("/search page (server render)", () => {
+  it("renders one h1, the local/lexical note, the URL query and the kind chips", async () => {
+    nav.search = "q=keyhole&kind=lesson,not-a-kind";
+    const mod = await loadPage(path.join(APP, "(app)/search/page.tsx"));
+    const html = renderToStaticMarkup(createElement(mod.default));
+    expect(html.match(/<h1\b/g)?.length).toBe(1);
+    expect(html).toMatch(/lexical/);
+    expect(html).toMatch(/provider interface/);
+    expect(html).toMatch(/No AI model or remote search\s+service is involved/);
+    expect(html).toMatch(/<input[^>]*id="search-q"[^>]*value="keyhole"/);
+    expect(html).toMatch(/id="search-results"/); // the input's aria-controls target
+    expect(html).toMatch(/aria-pressed="true"[^>]*>Lesson\b/); // ?kind= restored, unknown kinds dropped
+    expect(html).toMatch(/aria-pressed="false"[^>]*>All\b/);
+    expect(html).toMatch(/aria-busy="true"/); // the index has not loaded during a server render
+    nav.search = "";
+  });
+});
+
+describe("source integrity of the index", () => {
+  it("labels platform-written text as such", () => {
+    // tool, component and quiz descriptions, and the titles/descriptions of figure and
+    // equation images, are written for LASERVERSE; calculators are derived
+    for (const k of ["tool", "component", "quiz", "figure", "formula"] as const) expect(KIND_CLASS[k], k).toBe("additional");
+    expect(KIND_CLASS.calculator).toBe("derived");
+    for (const k of ["lesson", "part", "glossary", "abbreviation", "source", "application", "troubleshooting"] as const) expect(KIND_CLASS[k], k).toBe("handbook");
+  });
+
+  it("keeps figure titles (written for LASERVERSE) out of handbook excerpts", () => {
+    let checked = 0;
+    for (const d of byKind("lesson")) {
+      const s = getSection(d.id.slice("lesson:".length))!;
+      for (const b of s.blocks) {
+        if (b.type !== "figure") continue;
+        const title = handbook.figures.find((f) => f.id === b.figureId)?.title;
+        if (!title) continue;
+        expect(d.keywords ?? "", `${d.id} keywords carry ${b.figureId}`).toContain(title);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("stays lean: no repeated text, no LaTeX formatting noise, bounded payload", () => {
+    for (const d of docs) expect(d.keywords === d.text, `${d.id} repeats its text as keywords`).toBe(false);
+    for (const d of byKind("formula")) expect(d.keywords ?? "", d.id).not.toMatch(/\\|\b(frac|mathrm|quad|qquad|left|right|text)\b/);
+    expect(byKind("formula").some((d) => /\blambda\b/.test(d.keywords ?? ""))).toBe(true);
+    // ~460 kB today, ~145 kB gzipped; this budget catches accidental duplication, not growth
+    expect(JSON.stringify(docs).length).toBeLessThan(520_000);
   });
 });
 
@@ -195,6 +356,7 @@ describe("local search over the index", () => {
     expect(hits).toContain("abbreviation:abbr-bpp");
     expect(hits).toContain("lesson:4.4");
     expect(hits.some((id) => id.startsWith("glossary:term-beam-parameter-product"))).toBe(true);
+    expect(top("beam parameter product", 10)).toContain("abbreviation:abbr-bpp");
   });
   it("finds the galvo scanner, lesson and calculator", () => {
     const hits = top("galvo", 8);
@@ -210,6 +372,9 @@ describe("local search over the index", () => {
     expect(hits[0]).toBe("glossary:term-rayleigh-range");
     expect(hits).toContain("lesson:4.3");
     expect(hits).toContain("calculator:focus-spot");
+  });
+  it("finds equations by symbol name", () => {
+    expect(engine.search("lambda", { kinds: ["formula"] }).length).toBeGreaterThan(0);
   });
   it("filters by kind and highlights the query in excerpts", () => {
     const calc = engine.search("galvo", { kinds: ["calculator"] });

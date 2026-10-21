@@ -57,12 +57,37 @@ function partLabel(sectionId: string): string {
   return p ? p.fullTitle : "Handbook";
 }
 
+/** Handbook text of the blocks: paragraphs, subheadings, lists, checklists, table cells, captions. */
 function blocksText(blocks: Block[]): string {
   return squash(
     blocks
-      .map((b) => (b.type === "figure" ? (getFigure(b.figureId)?.title ?? "") : blockText(b)))
+      .map(blockText)
       .filter(Boolean)
       .join(" "),
+  );
+}
+
+/**
+ * Titles of the figures in the blocks. They were written for LASERVERSE from the images, not
+ * taken from the handbook, so they are search terms only and never part of a handbook excerpt.
+ */
+function figureTitles(blocks: Block[]): string {
+  return blocks
+    .flatMap((b) => (b.type === "figure" ? [getFigure(b.figureId)?.title ?? ""] : []))
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * LaTeX reduced to its searchable symbols: formatting commands (\frac, \mathrm, \quad, …)
+ * would otherwise make every equation match words such as "right", "text" or "quad".
+ */
+function latexTerms(latex: string): string {
+  return squash(
+    latex
+      .replace(/\\(?:d?frac|tfrac|mathrm|mathbf|mathit|mathcal|textrm|text|operatorname|displaystyle|left|right|[bB]igg?[lr]?|q?quad|c?dots?|times|approx|sim|propto|leq?|geq?|sqrt|[Rr]ightarrow|circ|pm|mp)(?![A-Za-z])/g, " ")
+      .replace(/\\[,;:!]/g, " ")
+      .replace(/[{}^_&\\]/g, " "),
   );
 }
 
@@ -77,8 +102,9 @@ function lessonDocs(): SearchDoc[] {
       title: s.number ? `${s.number} ${heading}` : heading,
       location: part.fullTitle,
       href: sectionHref(s.id),
-      text: cap(blocksText(s.blocks), LESSON_TEXT_CAP),
-      keywords: [s.number ? `§${s.number}` : "", part.roman ? `Part ${part.roman}` : ""].filter(Boolean).join(" "),
+      // sections whose only content is a figure still need an excerpt: fall back to the heading
+      text: cap(blocksText(s.blocks), LESSON_TEXT_CAP) || heading,
+      keywords: [s.number ? `§${s.number}` : "", part.roman ? `Part ${part.roman}` : "", figureTitles(s.blocks)].filter(Boolean).join(" "),
       source: cite(s.id),
     };
   });
@@ -92,7 +118,7 @@ function partDocs(): SearchDoc[] {
     location: "Handbook",
     href: partHref(p.id),
     text: cap(squash(`${blocksText(p.lead)} ${p.sections.map((s) => (s.number ? `${s.number} ${s.title}` : s.title)).join(" · ")}`), LESSON_TEXT_CAP),
-    keywords: p.roman ? `Part ${p.roman}` : undefined,
+    keywords: [p.roman ? `Part ${p.roman}` : "", figureTitles(p.lead)].filter(Boolean).join(" "),
     source: `${p.roman ? `Part ${p.roman}` : p.title}${p.page ? ` · p.${p.page}` : ""}`,
   }));
 }
@@ -121,7 +147,6 @@ function abbreviationDocs(): SearchDoc[] {
     location: "Abbreviation dictionary",
     href: `/reference/glossary#${anchors[i]!}`,
     text: r["Meaning"] ?? "",
-    keywords: r["Meaning"] ?? "",
     source: cite("B.2"),
   }));
 }
@@ -140,7 +165,7 @@ function figureDocs(): SearchDoc[] {
           location: partLabel(f.sectionId),
           href: `/reference/formulas#${f.id}`,
           text: squash(`${title}. ${f.alt ?? ""} ${where}`),
-          keywords: f.latex ?? "",
+          keywords: f.latex ? latexTerms(f.latex) : "",
           source: cite(f.sectionId),
         };
       }

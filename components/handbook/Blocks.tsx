@@ -96,12 +96,12 @@ export function HandbookFigure({ fig }: { fig: Figure | undefined }) {
   if (fig.kind === "equation" && fig.latex) {
     return (
       <figure className="my-6 rounded-[var(--radius-md)] border border-[var(--line)] bg-ink-850/70" id={`fig-${fig.id}`}>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] px-4 py-2">
-          <figcaption className="text-[12px] font-medium text-fog-300">{fig.title}</figcaption>
+        <figcaption className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] px-4 py-2">
+          <span className="text-[12px] font-medium text-fog-300">{fig.title}</span>
           <Badge tone="warn" title="Equations in the handbook are images. This LaTeX was transcribed from the image and needs review; the original is available below.">
             Transcribed equation · review
           </Badge>
-        </div>
+        </figcaption>
         <div className="scrollbar-thin overflow-x-auto px-4 py-4 text-[15px]">
           <Tex math={fig.latex} display />
         </div>

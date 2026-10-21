@@ -36,9 +36,28 @@ Status of this release, written to be read literally: "implemented" means the fe
 
 ## Verification
 
-_To be completed with the results of the final run._
+Results of the last full run (2026-10-21), on the committed code:
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` (strict TypeScript) | passes, 0 errors |
+| `npm test` (Vitest) | 331 tests in 14 files pass |
+| `npm run build` (Next.js production build) | passes; 265 statically generated pages. The build fails if any quotation, table header or schema check against the handbook fails. |
+| `npm run test:e2e` (Playwright, Chromium with SwiftShader WebGL) | 60 tests pass (43 desktop at 1440 × 900, 17 mobile on a Pixel 7 profile) |
+
+The end-to-end suite covers: landing content and CTAs, skip intro, every main route rendering an `<h1>` with HTTP 200 and no uncaught errors, breadcrumbs, the static search index, lesson completion and bookmark persistence across reloads, quiz feedback, calculator compute/validate/reset/unit change, palette and `/search`, palette focus trap and focus return, source-drawer Escape, the 3D machine explorer (selection, explode, layers, camera reset and presets, interlock logic), the keyboard-operable 2D schematic, the WebGL-unavailable fallback, deep links, no horizontal overflow on 14 pages at phone width, the mobile navigation drawer, and the landing page under reduced motion.
+
+**Manual visual review.** Screenshots at 1440 × 900 and 390 × 844 were reviewed for the landing chapters, Home, the labs, process workspaces, applications, the machine explorer (overview, scan head, exploded, 2D) and the architecture, safety, troubleshooting, reference and search pages.
+
+**Defect found and fixed in the final run.** Navigating from the landing page could throw `removeChild … not a child of this node` (5 of 8 repeated runs). The landing scene's in-canvas HTML labels were replaced with a projected DOM overlay; 12 of 12 repeated runs then passed.
+
+**Not measured.** No runtime performance measurements (frame rate, Lighthouse, Core Web Vitals) were taken. The build output reports 103 kB of first-load JavaScript shared by all routes; that is a bundle size, not a performance result. No cross-browser testing beyond Chromium. No automated accessibility (axe) audit; accessibility was checked by code review, server-rendered markup tests and keyboard e2e tests. No visual-regression baselines are stored.
 
 ## Known issues and review items
+
+- No ESLint configuration is included; code quality is enforced by strict TypeScript and the test suites.
+- The technology map's branches are collapsed in server-rendered HTML; without JavaScript only the top level is visible (the verbatim §28.0 text tree is still on the page).
+- The search index is about 476 kB uncompressed (about 147 kB gzip) and is downloaded on first search.
 
 - All 43 equations are manual LaTeX transcriptions of images and need expert review; diagram descriptions and the §B.5 decision tree are transcriptions too.
 - Review flags from cross-checking the handbook's numbers against its own equations are listed on `/reference/status` (`content/review-flags.ts`); the handbook text was not altered.

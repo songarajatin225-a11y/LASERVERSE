@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useDialog } from "@/components/ui/useDialog";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, CornerDownLeft, Loader2, ArrowRight } from "lucide-react";
@@ -41,7 +42,22 @@ export function CommandPalette() {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Tab stays inside the palette; Escape and focus return are handled below
+  useDialog(open, panelRef, () => setOpen(false), { escape: false, initialFocus: false, restoreFocus: false });
   const recent = usePersisted((s) => s.recent.slice(0, 5));
+
+  // Remember what had focus when the palette opened and give it back when it closes.
+  useEffect(() => {
+    if (open) {
+      returnFocus.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
+      return;
+    }
+    const el = returnFocus.current;
+    returnFocus.current = null;
+    if (el?.isConnected) el.focus({ preventScroll: true });
+  }, [open]);
 
   useEffect(() => {
     const onOpen = () => setOpen(true);
@@ -131,6 +147,7 @@ export function CommandPalette() {
         <div className="fixed inset-0 z-[60] flex items-start justify-center px-3 pt-[10vh]" role="dialog" aria-modal="true" aria-label="Search">
           <motion.div className="absolute inset-0 bg-black/65 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} />
           <motion.div
+            ref={panelRef}
             className="relative flex max-h-[76vh] w-full max-w-2xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-white/10 bg-ink-850 shadow-[0_40px_120px_-30px_rgb(0_0_0/0.9)]"
             initial={{ opacity: 0, y: -10, scale: 0.985 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

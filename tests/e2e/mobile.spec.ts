@@ -30,3 +30,12 @@ test("reduced motion: landing still renders the story", async ({ browser }) => {
   await expect(page.getByRole("heading", { name: /A cavity turns gain into a laser/ })).toBeVisible();
   await ctx.close();
 });
+
+test("mobile navigation drawer closes with Escape", async ({ page }) => {
+  await page.goto("/home");
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const drawer = page.getByRole("dialog", { name: "Navigation" });
+  await expect(drawer).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+});

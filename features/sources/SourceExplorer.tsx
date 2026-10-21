@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDialog } from "@/components/ui/useDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Search, X, GitCompare } from "lucide-react";
@@ -79,6 +80,8 @@ export function SourceExplorer({ entries, lines, families }: { entries: ClientSo
     [entries, fam, band, mode, q],
   );
   const opened = entries.find((e) => e.id === open);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useDialog(Boolean(opened), drawerRef, () => setOpen(null));
   const compared = cmp.map((id) => entries.find((e) => e.id === id)!).filter(Boolean);
   const toggleCmp = (id: string) => setCmp((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length >= 3 ? [...c.slice(1), id] : [...c, id]));
 
@@ -258,6 +261,7 @@ export function SourceExplorer({ entries, lines, families }: { entries: ClientSo
           <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label={opened.name}>
             <motion.div className="absolute inset-0 bg-black/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(null)} />
             <motion.div
+              ref={drawerRef}
               className="relative flex h-full w-full max-w-xl flex-col overflow-y-auto border-l border-[var(--line)] bg-ink-850"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}

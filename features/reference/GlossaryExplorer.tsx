@@ -87,7 +87,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
   return (
     <div className="flex flex-col gap-8">
       <div className="sticky top-16 z-10 flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-900/90 p-3 backdrop-blur">
-        <label className="flex h-10 min-w-0 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
+        <div className="flex h-10 min-w-0 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
           <Search aria-hidden className="size-4 shrink-0 text-fog-500" />
           <input
             type="search"
@@ -102,7 +102,7 @@ export function GlossaryExplorer({ terms, abbreviations }: { terms: GlossaryEntr
               <X aria-hidden className="size-4" />
             </button>
           ) : null}
-        </label>
+        </div>
         <p className="text-[12px] text-fog-500" aria-live="polite">
           Showing {shownTerms.length} of {terms.length} terms · {shownAbbr.length} of {abbreviations.length} abbreviations ·{" "}
           <a href="#glossary" className="text-teal-300 hover:underline">
