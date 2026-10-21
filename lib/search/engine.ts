@@ -1,4 +1,5 @@
 import MiniSearch from "minisearch";
+import { withBase } from "@/lib/basePath";
 
 export type SearchKind =
   | "lesson"
@@ -128,7 +129,7 @@ let cached: Promise<LocalSearch> | null = null;
 /** Lazily download the static index and build the engine once per page session. */
 export function loadSearch(): Promise<LocalSearch> {
   if (!cached) {
-    cached = fetch("/search-index.json")
+    cached = fetch(withBase("/search-index.json"))
       .then((r) => {
         if (!r.ok) throw new Error(`search index HTTP ${r.status}`);
         return r.json() as Promise<{ docs: SearchDoc[] }>;

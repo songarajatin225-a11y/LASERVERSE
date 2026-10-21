@@ -100,7 +100,8 @@ export function SearchPage({ totals, total }: { totals: Partial<Record<SearchKin
     const key = queryString(nextQ, nextKinds);
     if (key === lastWritten.current) return;
     lastWritten.current = key;
-    window.history.replaceState(null, "", key ? `/search?${key}` : "/search");
+    // keep the current path (base path and trailing slash included); only the query changes
+    window.history.replaceState(null, "", key ? `${window.location.pathname}?${key}` : window.location.pathname);
   }, []);
 
   // debounced while typing
