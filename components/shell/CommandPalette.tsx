@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, CornerDownLeft, Loader2, ArrowRight } from "lucide-react";
@@ -113,7 +114,7 @@ export function CommandPalette() {
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (e.metaKey || e.ctrlKey || !rows[active]) {
-        if (q.trim()) go(`/search?q=${encodeURIComponent(q)}`);
+        if (q.trim()) go(`/search?q=${encodeURIComponent(q.trim())}`);
       } else {
         go(rows[active]!.href);
       }
@@ -187,16 +188,24 @@ export function CommandPalette() {
               ) : null}
             </ul>
             {q.trim() ? (
-              <button
-                type="button"
-                onClick={() => go(`/search?q=${encodeURIComponent(q)}`)}
+              <Link
+                href={`/search?q=${encodeURIComponent(q.trim())}`}
+                onClick={() => {
+                  setOpen(false);
+                  setQ("");
+                }}
+                // let Enter activate this link natively instead of the dialog's "open active row" handler
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.stopPropagation();
+                }}
                 className="flex items-center justify-between border-t border-[var(--line)] px-4 py-2.5 text-[12.5px] text-fog-400 hover:text-fog-100"
               >
                 <span>
-                  All results for “{q}” {engine ? `(${results.length}${results.length === 24 ? "+" : ""})` : ""}
+                  See all results for “{q.trim()}” {engine ? `(${results.length}${results.length === 24 ? "+" : ""})` : ""}
+                  <span className="ml-2 hidden text-fog-500 sm:inline">Ctrl/⌘ + Enter</span>
                 </span>
                 <ArrowRight aria-hidden className="size-3.5" />
-              </button>
+              </Link>
             ) : null}
           </motion.div>
         </div>

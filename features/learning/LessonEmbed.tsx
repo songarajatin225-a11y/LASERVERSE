@@ -11,6 +11,8 @@ import { materialsLabData } from "@/lib/content/materials";
 import { OverlapSimulator } from "@/features/processes/OverlapSimulator";
 import { WeldingTool } from "@/features/processes/ProcessTools";
 import { weldingData } from "@/lib/content/processes";
+import { DecisionTree } from "@/features/reference/DecisionTree";
+import { decisionTreeData } from "@/lib/content/reference";
 
 /** Server component: loads the handbook data a lab needs and renders it compactly inside a lesson. */
 export function LessonEmbed({ kind, section }: { kind: EmbedKind; section?: string }) {
@@ -39,7 +41,9 @@ export function LessonEmbed({ kind, section }: { kind: EmbedKind; section?: stri
       return <OverlapSimulator context="marking" compact />;
     case "welding":
       return <WeldingTool modes={weldingData().modes} compact />;
+    case "decision-tree":
+      return <DecisionTree data={decisionTreeData()} compact />;
     default:
-      return null; // "decision-tree" is added with the reference library
+      return null;
   }
 }

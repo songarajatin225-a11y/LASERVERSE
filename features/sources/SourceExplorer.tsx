@@ -54,7 +54,14 @@ export function SourceExplorer({ entries, lines, families }: { entries: ClientSo
     const f = params.get("family");
     if (f) setFam(f);
     if (params.get("view") === "wavelengths") setView("wavelengths");
-  }, [params]);
+    // deep link from search: ?source=<entryId> opens that entry and scrolls its card into view
+    const s = params.get("source");
+    if (s && entries.some((e) => e.id === s)) {
+      setView("catalogue");
+      setOpen(s);
+      requestAnimationFrame(() => document.getElementById(`source-${s}`)?.scrollIntoView({ block: "center" }));
+    }
+  }, [params, entries]);
 
   const familiesList = useMemo(() => [...new Map(entries.map((e) => [e.family, e.familyLabel])).entries()], [entries]);
   const shown = useMemo(
@@ -129,7 +136,7 @@ export function SourceExplorer({ entries, lines, families }: { entries: ClientSo
                   const inCmp = cmp.includes(e.id);
                   return (
                     <motion.li key={e.id} layout initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: duration.fast, ease: ease.out }}>
-                      <div className={cn("flex h-full flex-col rounded-[var(--radius-lg)] border bg-ink-800/70 p-4 transition-colors", open === e.id ? "border-teal-400/60" : "border-[var(--line)] hover:border-white/15")}>
+                      <div id={`source-${e.id}`} className={cn("flex h-full scroll-mt-24 flex-col rounded-[var(--radius-lg)] border bg-ink-800/70 p-4 transition-colors", open === e.id ? "border-teal-400/60" : "border-[var(--line)] hover:border-white/15")}>
                         <div className="flex items-start justify-between gap-2">
                           <button type="button" onClick={() => setOpen(e.id)} className="text-left text-[15px] font-semibold leading-snug text-fog-100 hover:text-paper">
                             {e.name}
