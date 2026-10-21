@@ -1,4 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as React from "react";
+import { createElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import fs from "node:fs";
+import { outline } from "@/lib/content/outline";
 import {
   splitCell,
   symptomCards,
@@ -111,5 +116,126 @@ describe("quotations and §12.5 recipe practice", () => {
     expect(q.lead.startsWith("Work from the workpiece back to the source")).toBe(true);
     expect(q.lead.endsWith("not the laser.")).toBe(true);
     expect(() => troubleshootingData()).not.toThrow();
+  });
+});
+
+/* ------------------------------------------------------------------ server render of /troubleshooting */
+vi.mock("next/link", () => ({
+  default: ({ href, children, className, title }: { href: string; children?: ReactNode; className?: string; title?: string }) =>
+    createElement("a", { href, className, title }, children),
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/troubleshooting",
+  useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+const SAFETY_ANCHORS = ["classes", "hazards", "standards", "safety-architecture", "od-nohd", "metrology", "feasibility", "doe", "checklists"];
+const decode = (s: string) =>
+  s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&amp;/g, "&");
+/** Visible text with tags and all whitespace removed (robust to inline links the renderer adds). */
+const textOf = (html: string) => decode(html.replace(/<[^>]+>/g, "")).replace(/\s+/g, "");
+const squash = (s: string) => s.replace(/\s+/g, "");
+const idsOf = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => decode(m[1]!));
+
+async function renderTroubleshooting(): Promise<string> {
+  // the project's vitest config compiles TSX with the classic runtime
+  (globalThis as { React?: typeof React }).React = React;
+  const { default: Page } = await import("@/app/(app)/troubleshooting/page");
+  return renderToStaticMarkup(createElement(Page));
+}
+
+/** The markup of each card, keyed by its anchor id. */
+function articles(html: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const m of html.matchAll(/<article id="([^"]+)"[\s\S]*?<\/article>/g)) out.set(decode(m[1]!), m[0]);
+  return out;
+}
+
+describe("/troubleshooting page (server render)", () => {
+  it("renders one h1, unique ids and one anchored card per handbook row", async () => {
+    const html = await renderTroubleshooting();
+    expect((html.match(/<h1[\s>]/g) ?? []).length).toBe(1);
+    const ids = idsOf(html);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i), "duplicate ids").toEqual([]);
+    const cards = articles(html);
+    const expected = [...symptomCards(), ...weldDefectCards()].map((c) => c.id);
+    expect([...cards.keys()]).toEqual(expected);
+    expect(html).not.toContain("unknown source");
+  });
+
+  it("shows checks only where the handbook has a diagnostic column, and labels verification as platform guidance", async () => {
+    const cards = articles(await renderTroubleshooting());
+    // note: §27.2 "Weld porosity" is itself slugged "weld-porosity", so go by card kind, not by prefix
+    const weldIds = new Set(weldDefectCards().map((c) => c.id));
+    expect(weldIds.size).toBe(9);
+    for (const [id, a] of cards) {
+      expect(a.includes(">Checks<"), `${id} checks step`).toBe(!weldIds.has(id));
+      expect(a, id).toContain("Platform guidance (not from the handbook)");
+      // the verification guidance is generic: no numbers outside the §12.5 citation
+      const guidance = /Platform guidance \(not from the handbook\)<\/p><p>([\s\S]*?)<\/p>/.exec(a)?.[1] ?? "";
+      expect(guidance.length, id).toBeGreaterThan(40);
+      expect(/\d/.test(guidance), `${id}: ${guidance}`).toBe(false);
+    }
+  });
+
+  it("renders every handbook cell verbatim inside its card", async () => {
+    const cards = articles(await renderTroubleshooting());
+    for (const c of [...symptomCards(), ...weldDefectCards()]) {
+      const t = textOf(cards.get(c.id)!);
+      for (const v of [c.problem, ...c.causes, ...(c.checks ?? []), ...c.actions]) expect(t, c.id).toContain(squash(v));
+    }
+  });
+
+  it("links only to routes, anchors, calculators and workspaces that exist", async () => {
+    const html = await renderTroubleshooting();
+    const ids = new Set(idsOf(html));
+    const learn = new Set<string>(["/learn"]);
+    for (const p of outline.parts) {
+      learn.add(`/learn/${p.id}`);
+      for (const s of p.sections) learn.add(`/learn/${p.id}/${s.slug}`);
+    }
+    const archSrc = [
+      fs.readFileSync("app/(app)/architecture/page.tsx", "utf8"),
+      ...fs.readdirSync("features/architecture").map((f) => fs.readFileSync(`features/architecture/${f}`, "utf8")),
+    ].join("\n");
+    const processIds = new Set<string>(PROCESS_DEFS.map((p) => p.id));
+    const hrefs = [...new Set([...html.matchAll(/\shref="([^"]+)"/g)].map((m) => decode(m[1]!)))];
+    expect(hrefs.length).toBeGreaterThan(40);
+    const bad: string[] = [];
+    for (const href of hrefs) {
+      if (href.startsWith("#")) {
+        if (!ids.has(href.slice(1))) bad.push(href);
+        continue;
+      }
+      const u = new URL(href, "https://laserverse.local");
+      const path = u.pathname;
+      const hash = u.hash.slice(1);
+      if (path.startsWith("/learn")) {
+        if (!learn.has(path)) bad.push(href);
+      } else if (path.startsWith("/calculators/")) {
+        if (!CALCULATOR_INDEX.has(path.slice("/calculators/".length))) bad.push(href);
+      } else if (path.startsWith("/processes/")) {
+        if (!processIds.has(path.slice("/processes/".length))) bad.push(href);
+      } else if (path === "/safety" && hash) {
+        if (!SAFETY_ANCHORS.includes(hash)) bad.push(href);
+      } else if (path === "/architecture" && hash) {
+        if (!archSrc.includes(`id="${hash}"`)) bad.push(href);
+      } else if (!fs.existsSync(`app/(app)${path}/page.tsx`)) bad.push(href);
+    }
+    expect(bad).toEqual([]);
+    // /safety#metrology is rendered by the safety page
+    expect(fs.readFileSync("app/(app)/safety/page.tsx", "utf8")).toContain('id="metrology"');
+  });
+
+  it("mentions bypassing only to rule it out", async () => {
+    const html = await renderTroubleshooting();
+    const text = decode(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").toLowerCase();
+    const hits = [...text.matchAll(/bypass|defeat|override/g)];
+    expect(hits.length).toBeGreaterThan(0);
+    for (const m of hits) {
+      const before = text.slice(Math.max(0, m.index! - 60), m.index!);
+      expect(/\bnever\b|\bnot\b|\bno\b/.test(before), `“…${before}${m[0]}”`).toBe(true);
+    }
   });
 });

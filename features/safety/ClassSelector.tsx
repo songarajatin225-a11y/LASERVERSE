@@ -41,6 +41,10 @@ export function ClassSelector({ classes, aelNote }: { classes: LaserClass[]; ael
   if (!cur) return null;
   return (
     <div className="flex flex-col gap-4">
+      {/* placed above the selector: the handbook sentence refers to "the power figures below" */}
+      <p className="text-[12.5px] leading-relaxed text-fog-400">
+        “{aelNote}” <SourceRef section="24.1" />
+      </p>
       <div role="radiogroup" aria-label="Laser class" className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
         {classes.map((c, i) => {
           const on = c.cls === cur.cls;
@@ -102,9 +106,6 @@ export function ClassSelector({ classes, aelNote }: { classes: LaserClass[]; ael
       </article>
 
       <AelScale classes={classes} selected={cur.cls} />
-      <p className="text-[12.5px] leading-relaxed text-fog-400">
-        “{aelNote}” <SourceRef section="24.1" />
-      </p>
     </div>
   );
 }
@@ -146,15 +147,17 @@ function AelScale({ classes, selected }: { classes: LaserClass[]; selected: stri
   const sel = classes.find((c) => c.cls === selected);
   return (
     <figure className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-850/70 p-4">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <figcaption className="text-[13px] font-medium text-fog-200">Where the CW visible power figures sit</figcaption>
-        <div className="flex flex-wrap gap-1.5">
+      {/* figcaption must be a direct child of figure */}
+      <figcaption className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[13px] font-medium text-fog-200">Where the CW visible power figures sit</span>
+        <span className="flex flex-wrap gap-1.5">
           <ClassTag kind="derived" short />
           <Badge tone="fog">Log scale</Badge>
-        </div>
-      </div>
-      <div className="scrollbar-thin overflow-x-auto">
-        <svg viewBox="0 0 520 92" className="h-auto w-full min-w-[440px]" role="img" aria-label={`Logarithmic power scale from 0.1 mW to 10 W showing the upper limits in the AEL column: ${bands.map((b) => `Class ${b.cls} ${b.label}`).join(", ")}.`}>
+        </span>
+      </figcaption>
+      {/* scrolls inside its own box below ~470 px; focusable so keyboard users can scroll it */}
+      <div className="scrollbar-thin overflow-x-auto rounded-[var(--radius-sm)]" tabIndex={0} role="region" aria-label="Power scale (scrolls horizontally on narrow screens)">
+        <svg viewBox="0 0 520 92" className="mx-auto block h-auto w-full min-w-[440px] max-w-[760px]" role="img" aria-label={`Logarithmic power scale from 0.1 mW to 10 W showing the upper limits in the AEL column: ${bands.map((b) => `Class ${b.cls} ${b.label}`).join(", ")}.`}>
           <defs>
             {bands
               .filter((b) => b.lo === null)

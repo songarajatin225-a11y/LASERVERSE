@@ -142,7 +142,8 @@ export default function SafetyPage() {
           <div className="min-w-0 xl:mt-8">
             <SafetyElements elements={d.architecture} />
             <p className="mt-2 text-[12px] text-fog-500">
-              Explorer links open the matching part of a generic, illustrative Class 1 workstation; it is not a validated safety design.
+              Explorer links open the closest modelled part of a generic, illustrative Class 1 workstation (derived mapping by element name); it is not a
+              validated safety design.
             </p>
           </div>
         </div>
@@ -168,7 +169,7 @@ export default function SafetyPage() {
                 supply MPE values, and do not select or certify eyewear.
               </PlatformNote>
             </Callout>
-            <Callout kind="note" title="Engineering controls first (§24.2)">
+            <Callout kind="note" title="Service work and safety systems (§24.2)">
               “{q.noBypassHandbook}” <SourceRef section="24.2" />
             </Callout>
           </div>

@@ -7,40 +7,44 @@ import { STANDARD_GROUP_LABEL, type StandardGroup, type StandardRow } from "./ty
 
 const GROUPS = Object.keys(STANDARD_GROUP_LABEL) as StandardGroup[];
 
+/** Case-, superscript- and dash-insensitive matching, so "m2" finds "M²" and "13849-1" finds "13849‑1". */
+const norm = (s: string) => s.toLowerCase().replace(/²/g, "2").replace(/[‐‑–—]/g, "-");
+
 export function StandardsFilter({ rows }: { rows: StandardRow[] }) {
   const [q, setQ] = useState("");
   const [group, setGroup] = useState<StandardGroup | null>(null);
   const tokens = useMemo(
     () =>
-      q
-        .toLowerCase()
+      norm(q)
         .split(/\s+/)
         .filter(Boolean),
     [q],
   );
   const list = rows.filter((r) => {
     if (group && r.group !== group) return false;
-    const hay = `${r.standard} ${r.scope}`.toLowerCase();
+    const hay = norm(`${r.standard} ${r.scope}`);
     return tokens.every((t) => hay.includes(t));
   });
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
+        {/* a div, not a label: a label may not contain a second labelable element (the clear button) */}
+        <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
           <Search aria-hidden className="size-4 shrink-0 text-fog-500" />
           <input
+            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter, e.g. eyewear, 13849, welding, M²"
-            className="w-full min-w-0 bg-transparent text-[13.5px] text-fog-100 outline-none placeholder:text-fog-500"
-            aria-label="Filter standards"
+            className="w-full min-w-0 bg-transparent text-[13.5px] text-fog-100 outline-none placeholder:text-fog-500 [&::-webkit-search-cancel-button]:hidden"
+            aria-label="Filter standards by number or scope"
           />
           {q ? (
-            <button type="button" onClick={() => setQ("")} aria-label="Clear filter" className="text-fog-500 hover:text-fog-200">
+            <button type="button" onClick={() => setQ("")} aria-label="Clear filter" className="shrink-0 text-fog-500 hover:text-fog-200">
               <X aria-hidden className="size-4" />
             </button>
           ) : null}
-        </label>
+        </div>
         <div role="group" aria-label="Standard group (derived)" className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"

@@ -25,8 +25,12 @@ function matchesFault(card: TroubleCard, phrase: string): boolean {
     .some((w) => card.haystack.includes(stem(w)));
 }
 
+/** Case-, superscript- and dash-insensitive matching, so "m2" finds "M²" and "al-cu" finds "Al–Cu". */
+const norm = (s: string) => s.toLowerCase().replace(/²/g, "2").replace(/₂/g, "2").replace(/[‐‑–—]/g, "-");
+
 function matchesQuery(card: TroubleCard, tokens: string[]): boolean {
-  return tokens.every((t) => card.haystack.includes(t) || card.haystack.includes(stem(t)));
+  const hay = norm(card.haystack);
+  return tokens.every((t) => hay.includes(t) || hay.includes(stem(t)));
 }
 
 /* ------------------------------------------------------------------ explorer */
@@ -46,8 +50,7 @@ export function TroubleshootingExplorer({
   const [fault, setFault] = useState<string | null>(null);
   const tokens = useMemo(
     () =>
-      q
-        .toLowerCase()
+      norm(q)
         .split(/\s+/)
         .filter(Boolean),
     [q],
@@ -65,21 +68,23 @@ export function TroubleshootingExplorer({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-ink-800/70 p-4">
-        <label className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
+        {/* a div, not a label: a label may not contain a second labelable element (the clear button) */}
+        <div className="flex h-10 min-w-0 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--line-strong)] bg-ink-850 px-3 focus-within:border-teal-400">
           <Search aria-hidden className="size-4 shrink-0 text-fog-500" />
           <input
+            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Filter symptoms, causes, checks or actions — e.g. focus, porosity, scanner"
-            className="w-full min-w-0 bg-transparent text-[13.5px] text-fog-100 outline-none placeholder:text-fog-500"
-            aria-label="Filter troubleshooting cards"
+            placeholder="Filter, e.g. focus, porosity, scanner"
+            className="w-full min-w-0 bg-transparent text-[13.5px] text-fog-100 outline-none placeholder:text-fog-500 [&::-webkit-search-cancel-button]:hidden"
+            aria-label="Filter troubleshooting cards by symptom, cause, check or action"
           />
           {q ? (
-            <button type="button" onClick={() => setQ("")} aria-label="Clear filter" className="text-fog-500 hover:text-fog-200">
+            <button type="button" onClick={() => setQ("")} aria-label="Clear filter" className="shrink-0 text-fog-500 hover:text-fog-200">
               <X aria-hidden className="size-4" />
             </button>
           ) : null}
-        </label>
+        </div>
 
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-fog-500">
@@ -109,7 +114,8 @@ export function TroubleshootingExplorer({
             ))}
           </div>
           <p className="text-[11.5px] leading-snug text-fog-500">
-            Topic and fault filters match keywords in the handbook text of each row; they are a LASERVERSE navigation aid, not a handbook classification.
+            Topics come from keywords in the symptom or defect name (every §10.4 defect is filed under welding); fault families match their words anywhere in
+            the row’s handbook text. Both are a LASERVERSE navigation aid, not a handbook classification.
           </p>
         </div>
 
@@ -230,7 +236,15 @@ function TroubleCardView({ card, recipe }: { card: TroubleCard; recipe: RecipePr
       </header>
       <ol className={cn("grid gap-px bg-[var(--line)] md:grid-cols-2", steps.length === 4 ? "xl:grid-cols-4" : "xl:grid-cols-3")}>
         {steps.map((s, i) => (
-          <li key={s.label} className={cn("flex min-w-0 flex-col gap-2 bg-ink-800 px-4 py-3.5 sm:px-5", i === steps.length - 1 ? "bg-ink-850" : "")}>
+          <li
+            key={s.label}
+            className={cn(
+              "flex min-w-0 flex-col gap-2 px-4 py-3.5 sm:px-5",
+              i === steps.length - 1 ? "bg-ink-850" : "bg-ink-800",
+              // three steps (no checks column) in a two-column grid: let the last one span so no empty cell shows the grid background
+              steps.length % 2 === 1 && i === steps.length - 1 ? "md:col-span-2 xl:col-span-1" : "",
+            )}
+          >
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <span aria-hidden className={cn("grid size-6 place-items-center rounded-full border font-mono text-[10.5px]", s.handbook ? "border-teal-500/40 text-teal-200" : "border-white/20 text-fog-300")}>
@@ -281,12 +295,12 @@ function Verification({ kind, recipe }: { kind: TroubleCard["kind"]; recipe: Rec
     <div className="flex flex-col gap-2 text-[13px] leading-snug text-fog-300">
       <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-fog-500">Platform guidance (not from the handbook)</p>
       {kind === "symptom" ? (
-        <p>Repeat the checks from step 2 after the change, under the same conditions, and confirm the symptom is gone. Then confirm on representative parts against the acceptance criteria before the recipe is released.</p>
+        <p>Repeat this card’s checks after the change, under the same conditions, and confirm the symptom is gone. Then confirm on representative parts against the acceptance criteria before the recipe is released.</p>
       ) : (
         <p>Inspect welds made after the change with the method your quality plan specifies and confirm the defect is gone on representative parts before the recipe is released.</p>
       )}
       <p className="text-[12px] text-fog-400">
-        Release changes as a new recipe version. {recipe.topic}, §12.5: “{recipe.practice}” <SourceRef section="12.5" />
+        Release changes as a new recipe version. Handbook good practice for {recipe.topic.toLowerCase()}: “{recipe.practice}” <SourceRef section="12.5" />
       </p>
     </div>
   );

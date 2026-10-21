@@ -1,4 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as React from "react";
+import { createElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import fs from "node:fs";
+import { outline } from "@/lib/content/outline";
+import { PROCESS_DEFS } from "@/lib/content/processes";
+import { symptomCards, weldDefectCards } from "@/lib/content/troubleshooting";
 import {
   laserClasses,
   parseAel,
@@ -136,5 +143,132 @@ describe("figures, quotations and page data", () => {
   });
   it("assembles the whole page without throwing", () => {
     expect(() => safetyPageData()).not.toThrow();
+  });
+});
+
+/* ------------------------------------------------------------------ server render of /safety */
+vi.mock("next/link", () => ({
+  default: ({ href, children, className, title }: { href: string; children?: ReactNode; className?: string; title?: string }) =>
+    createElement("a", { href, className, title }, children),
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/safety",
+  useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+/** /safety anchors from the brief's link conventions. */
+const SAFETY_ANCHORS = ["classes", "hazards", "standards", "safety-architecture", "od-nohd", "metrology", "feasibility", "doe", "checklists"];
+
+const decode = (s: string) =>
+  s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&amp;/g, "&");
+/**
+ * Visible text of the markup with tags and ALL whitespace removed, so that inline links
+ * the renderers add inside handbook text (e.g. "(→ §23.6)") do not break comparisons.
+ */
+const textOf = (html: string) => decode(html.replace(/<[^>]+>/g, "")).replace(/\s+/g, "");
+const squash = (s: string) => s.replace(/\s+/g, "");
+const idsOf = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => decode(m[1]!));
+
+async function renderSafety(): Promise<string> {
+  // the project's vitest config compiles TSX with the classic runtime
+  (globalThis as { React?: typeof React }).React = React;
+  const { default: Page } = await import("@/app/(app)/safety/page");
+  return renderToStaticMarkup(createElement(Page));
+}
+
+/** Every internal href resolves to a route, a modelled component, a calculator or an anchor that exists. */
+function badLinks(html: string): string[] {
+  const ids = new Set(idsOf(html));
+  const learn = new Set<string>(["/learn"]);
+  for (const p of outline.parts) {
+    learn.add(`/learn/${p.id}`);
+    for (const s of p.sections) learn.add(`/learn/${p.id}/${s.slug}`);
+  }
+  const archSrc = [
+    fs.readFileSync("app/(app)/architecture/page.tsx", "utf8"),
+    ...fs.readdirSync("features/architecture").map((f) => fs.readFileSync(`features/architecture/${f}`, "utf8")),
+  ].join("\n");
+  const troubleIds = new Set([...symptomCards(), ...weldDefectCards()].map((c) => c.id));
+  const processIds = new Set<string>(PROCESS_DEFS.map((p) => p.id));
+  const hrefs = [...new Set([...html.matchAll(/\shref="([^"]+)"/g)].map((m) => decode(m[1]!)))];
+  const bad: string[] = [];
+  for (const href of hrefs) {
+    if (href.startsWith("#")) {
+      if (!ids.has(href.slice(1))) bad.push(href);
+      continue;
+    }
+    if (/^https?:/.test(href)) continue;
+    const u = new URL(href, "https://laserverse.local");
+    const path = u.pathname;
+    const hash = u.hash.slice(1);
+    if (path.startsWith("/handbook/")) {
+      if (!fs.existsSync(`public${path}`)) bad.push(href);
+    } else if (path.startsWith("/learn")) {
+      if (!learn.has(path)) bad.push(href);
+    } else if (path.startsWith("/calculators/")) {
+      if (!CALCULATOR_INDEX.has(path.slice("/calculators/".length))) bad.push(href);
+    } else if (path.startsWith("/processes/")) {
+      if (!processIds.has(path.slice("/processes/".length))) bad.push(href);
+    } else if (path === "/machine") {
+      const sel = u.searchParams.get("select");
+      if (sel && !COMPONENT_INDEX.has(sel)) bad.push(href);
+    } else if (path === "/safety" && hash) {
+      if (!SAFETY_ANCHORS.includes(hash)) bad.push(href);
+    } else if (path === "/troubleshooting" && hash) {
+      if (!troubleIds.has(hash)) bad.push(href);
+    } else if (path === "/architecture" && hash) {
+      if (!archSrc.includes(`id="${hash}"`)) bad.push(href);
+    } else {
+      const page = path === "/" ? "app/page.tsx" : `app/(app)${path}/page.tsx`;
+      if (!fs.existsSync(page)) bad.push(href);
+    }
+  }
+  return bad;
+}
+
+describe("/safety page (server render)", () => {
+  it("renders every brief anchor exactly once, unique ids, one h1, no unknown source", async () => {
+    const html = await renderSafety();
+    const ids = idsOf(html);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i), "duplicate ids").toEqual([]);
+    for (const a of SAFETY_ANCHORS) expect(ids.filter((id) => id === a).length, a).toBe(1);
+    expect((html.match(/<h1[\s>]/g) ?? []).length, "exactly one h1 (embedded calculators render h2)").toBe(1);
+    expect(html).not.toContain("unknown source");
+    // embedded calculators link their h2 to the standalone calculator page
+    expect(html).toContain('href="/calculators/optical-density"');
+  });
+
+  it("links only to routes, anchors, calculators and components that exist", async () => {
+    const html = await renderSafety();
+    expect([...html.matchAll(/\shref="/g)].length).toBeGreaterThan(30);
+    expect(badLinks(html)).toEqual([]);
+  });
+
+  it("shows the handbook rows verbatim and the required disclaimers", async () => {
+    const text = textOf(await renderSafety());
+    for (const s of standards()) expect(text, s.standard).toContain(squash(`${s.standard} ${s.scope}`));
+    for (const h of hazards()) for (const v of [h.hazard, h.mechanism, h.controls]) expect(text).toContain(squash(v));
+    for (const e of safetyArchitecture()) expect(text).toContain(squash(e.purpose));
+    for (const it of feasibilityItems()) expect(text).toContain(squash(it.text));
+    for (const c of safetyChecklists()) for (const it of c.items) expect(text).toContain(squash(it.text));
+    for (const m of doeData().method) expect(text).toContain(squash(m));
+    for (const q of Object.values(safetyQuotes())) expect(text).toContain(squash(q));
+    // the selected class card (Class 4 by default) shows its handbook cells
+    const c4 = laserClasses().find((c) => c.cls === "4")!;
+    for (const v of [c4.meaning, c4.ael, c4.examples, c4.requirements]) expect(text).toContain(squash(v));
+    for (const must of ["Listing a standard is not a compliance claim", "Platform guidance (not from the handbook)", "does not certify machines", "laser safety officer"])
+      expect(text).toContain(squash(must));
+  });
+
+  it("mentions bypassing only to rule it out", async () => {
+    const html = await renderSafety();
+    const text = decode(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").toLowerCase();
+    const hits = [...text.matchAll(/bypass|defeat|override/g)];
+    expect(hits.length).toBeGreaterThan(0);
+    for (const m of hits) {
+      const before = text.slice(Math.max(0, m.index! - 60), m.index!);
+      expect(/\bnever\b|\bnot\b|\bno\b/.test(before), `“…${before}${m[0]}”`).toBe(true);
+    }
   });
 });

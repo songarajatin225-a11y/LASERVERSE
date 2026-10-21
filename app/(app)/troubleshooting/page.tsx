@@ -33,8 +33,8 @@ export default function TroubleshootingPage() {
               “{d.quotes.lead}” <SourceRef section="27.2" />
             </p>
             <p>
-              Every card follows the same path from problem to verified fix. Problem, causes, checks and actions are the handbook’s own table cells; the handbook has
-              no verification column, so that step is platform guidance and is labelled as such.
+              Every card follows the same path: problem, causes, checks, actions, verification. Problem, causes, checks and actions are the handbook’s own table
+              cells; the handbook has no verification column, so that step is platform guidance and is labelled as such.
             </p>
           </div>
         }
