@@ -1,0 +1,1512 @@
+{
+ "schemaVersion": 1,
+ "sourceSha256": "ea97e197b9e72745a5147b984fc075d451b0dcdeee5ad80fec473b2ab05fd7c4",
+ "parts": [
+  {
+   "id": "front",
+   "kind": "front",
+   "number": null,
+   "roman": null,
+   "title": "Front Matter",
+   "fullTitle": "Front Matter",
+   "page": 5,
+   "sections": [
+    {
+     "id": "front.executive-overview",
+     "slug": "executive-overview",
+     "number": null,
+     "title": "Executive overview",
+     "page": 5,
+     "synthetic": false
+    },
+    {
+     "id": "front.how-to-use-this-handbook",
+     "slug": "how-to-use-this-handbook",
+     "number": null,
+     "title": "How to use this handbook",
+     "page": 6,
+     "synthetic": false
+    },
+    {
+     "id": "front.table-of-contents",
+     "slug": "table-of-contents",
+     "number": null,
+     "title": "Table of contents",
+     "page": 6,
+     "synthetic": false
+    },
+    {
+     "id": "front.laser-technology-hierarchy",
+     "slug": "laser-technology-hierarchy",
+     "number": null,
+     "title": "Laser technology hierarchy",
+     "page": 8,
+     "synthetic": false
+    },
+    {
+     "id": "front.learning-roadmap-beginner-to-expert",
+     "slug": "learning-roadmap-beginner-to-expert",
+     "number": null,
+     "title": "Learning roadmap: beginner to expert",
+     "page": 9,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-1",
+   "kind": "part",
+   "number": 1,
+   "roman": "I",
+   "title": "Physics: Understanding Light from First Principles",
+   "fullTitle": "Part I — Physics: Understanding Light from First Principles",
+   "page": 10,
+   "sections": [
+    {
+     "id": "1.1",
+     "slug": "1-1",
+     "number": "1.1",
+     "title": "Energy",
+     "page": 10,
+     "synthetic": false
+    },
+    {
+     "id": "1.2",
+     "slug": "1-2",
+     "number": "1.2",
+     "title": "Matter and the atom",
+     "page": 10,
+     "synthetic": false
+    },
+    {
+     "id": "1.3",
+     "slug": "1-3",
+     "number": "1.3",
+     "title": "Electron energy levels",
+     "page": 10,
+     "synthetic": false
+    },
+    {
+     "id": "1.4",
+     "slug": "1-4",
+     "number": "1.4",
+     "title": "Quantum mechanics relevant to lasers",
+     "page": 11,
+     "synthetic": false
+    },
+    {
+     "id": "1.5",
+     "slug": "1-5",
+     "number": "1.5",
+     "title": "The photon",
+     "page": 11,
+     "synthetic": false
+    },
+    {
+     "id": "1.6",
+     "slug": "1-6",
+     "number": "1.6",
+     "title": "Photon energy, frequency and wavelength",
+     "page": 11,
+     "synthetic": false
+    },
+    {
+     "id": "1.7",
+     "slug": "1-7",
+     "number": "1.7",
+     "title": "Phase",
+     "page": 12,
+     "synthetic": false
+    },
+    {
+     "id": "1.8",
+     "slug": "1-8",
+     "number": "1.8",
+     "title": "Polarisation",
+     "page": 12,
+     "synthetic": false
+    },
+    {
+     "id": "1.9",
+     "slug": "1-9",
+     "number": "1.9",
+     "title": "Photon momentum",
+     "page": 13,
+     "synthetic": false
+    },
+    {
+     "id": "1.10",
+     "slug": "1-10",
+     "number": "1.10",
+     "title": "Electromagnetic radiation, the spectrum and the laser wavelength map",
+     "page": 13,
+     "synthetic": false
+    },
+    {
+     "id": "1.11",
+     "slug": "1-11",
+     "number": "1.11",
+     "title": "Why different wavelengths interact differently with different materials",
+     "page": 14,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-2",
+   "kind": "part",
+   "number": 2,
+   "roman": "II",
+   "title": "Laser Science: Laser Physics and Laser Architecture",
+   "fullTitle": "Part II — Laser Science: Laser Physics and Laser Architecture",
+   "page": 15,
+   "sections": [
+    {
+     "id": "2.1",
+     "slug": "2-1",
+     "number": "2.1",
+     "title": "Absorption, spontaneous emission and stimulated emission",
+     "page": 15,
+     "synthetic": false
+    },
+    {
+     "id": "2.2",
+     "slug": "2-2",
+     "number": "2.2",
+     "title": "Population inversion and level schemes",
+     "page": 15,
+     "synthetic": false
+    },
+    {
+     "id": "2.3",
+     "slug": "2-3",
+     "number": "2.3",
+     "title": "Metastable states, pumping and gain",
+     "page": 17,
+     "synthetic": false
+    },
+    {
+     "id": "2.4",
+     "slug": "2-4",
+     "number": "2.4",
+     "title": "The optical cavity, threshold and oscillation",
+     "page": 17,
+     "synthetic": false
+    },
+    {
+     "id": "2.5",
+     "slug": "2-5",
+     "number": "2.5",
+     "title": "Modes, coherence, monochromaticity, directionality and brightness",
+     "page": 18,
+     "synthetic": false
+    },
+    {
+     "id": "2.6",
+     "slug": "2-6",
+     "number": "2.6",
+     "title": "Ordinary light vs laser light",
+     "page": 19,
+     "synthetic": false
+    },
+    {
+     "id": "2.7",
+     "slug": "2-7",
+     "number": "2.7",
+     "title": "Generic laser architecture",
+     "page": 20,
+     "synthetic": false
+    },
+    {
+     "id": "2.8",
+     "slug": "2-8",
+     "number": "2.8",
+     "title": "Operating modes and pulse architectures",
+     "page": 21,
+     "synthetic": false
+    },
+    {
+     "id": "2.9",
+     "slug": "2-9",
+     "number": "2.9",
+     "title": "Pulse parameters",
+     "page": 22,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-3",
+   "kind": "part",
+   "number": 3,
+   "roman": "III",
+   "title": "Laser Sources: Complete Classification",
+   "fullTitle": "Part III — Laser Sources: Complete Classification",
+   "page": 24,
+   "sections": [
+    {
+     "id": "3.1",
+     "slug": "3-1",
+     "number": "3.1",
+     "title": "Classification axes",
+     "page": 24,
+     "synthetic": false
+    },
+    {
+     "id": "3.2",
+     "slug": "3-2",
+     "number": "3.2",
+     "title": "Solid-state lasers",
+     "page": 25,
+     "synthetic": false
+    },
+    {
+     "id": "3.3",
+     "slug": "3-3",
+     "number": "3.3",
+     "title": "Fiber lasers",
+     "page": 27,
+     "synthetic": false
+    },
+    {
+     "id": "3.4",
+     "slug": "3-4",
+     "number": "3.4",
+     "title": "Gas lasers",
+     "page": 30,
+     "synthetic": false
+    },
+    {
+     "id": "3.5",
+     "slug": "3-5",
+     "number": "3.5",
+     "title": "Semiconductor lasers",
+     "page": 31,
+     "synthetic": false
+    },
+    {
+     "id": "3.6",
+     "slug": "3-6",
+     "number": "3.6",
+     "title": "Ultrafast lasers",
+     "page": 34,
+     "synthetic": false
+    },
+    {
+     "id": "3.7",
+     "slug": "3-7",
+     "number": "3.7",
+     "title": "Specialised lasers",
+     "page": 37,
+     "synthetic": false
+    },
+    {
+     "id": "3.8",
+     "slug": "3-8",
+     "number": "3.8",
+     "title": "Laser wavelengths: source, absorption and application map",
+     "page": 38,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-4",
+   "kind": "part",
+   "number": 4,
+   "roman": "IV",
+   "title": "Beam Engineering",
+   "fullTitle": "Part IV — Beam Engineering",
+   "page": 41,
+   "sections": [
+    {
+     "id": "4.1",
+     "slug": "4-1",
+     "number": "4.1",
+     "title": "The Gaussian beam",
+     "page": 41,
+     "synthetic": false
+    },
+    {
+     "id": "4.2",
+     "slug": "4-2",
+     "number": "4.2",
+     "title": "TEM modes and M²",
+     "page": 41,
+     "synthetic": false
+    },
+    {
+     "id": "4.3",
+     "slug": "4-3",
+     "number": "4.3",
+     "title": "Beam waist, Rayleigh range, divergence and depth of focus",
+     "page": 42,
+     "synthetic": false
+    },
+    {
+     "id": "4.4",
+     "slug": "4-4",
+     "number": "4.4",
+     "title": "Numerical aperture, BPP, brightness and étendue",
+     "page": 42,
+     "synthetic": false
+    },
+    {
+     "id": "4.5",
+     "slug": "4-5",
+     "number": "4.5",
+     "title": "Spot size and depth of focus: design equations",
+     "page": 43,
+     "synthetic": false
+    },
+    {
+     "id": "4.6",
+     "slug": "4-6",
+     "number": "4.6",
+     "title": "Worked examples",
+     "page": 43,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-5",
+   "kind": "part",
+   "number": 5,
+   "roman": "V",
+   "title": "Laser Optics",
+   "fullTitle": "Part V — Laser Optics",
+   "page": 45,
+   "sections": [
+    {
+     "id": "5.1",
+     "slug": "5-1",
+     "number": "5.1",
+     "title": "Optical components",
+     "page": 45,
+     "synthetic": false
+    },
+    {
+     "id": "5.2",
+     "slug": "5-2",
+     "number": "5.2",
+     "title": "Coatings",
+     "page": 46,
+     "synthetic": false
+    },
+    {
+     "id": "5.3",
+     "slug": "5-3",
+     "number": "5.3",
+     "title": "Damage threshold, absorption and thermal lensing",
+     "page": 46,
+     "synthetic": false
+    },
+    {
+     "id": "5.4",
+     "slug": "5-4",
+     "number": "5.4",
+     "title": "Beam shaping and diffractive optics",
+     "page": 47,
+     "synthetic": false
+    },
+    {
+     "id": "5.5",
+     "slug": "5-5",
+     "number": "5.5",
+     "title": "Optical materials",
+     "page": 47,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-6",
+   "kind": "part",
+   "number": 6,
+   "roman": "VI",
+   "title": "Beam Delivery",
+   "fullTitle": "Part VI — Beam Delivery",
+   "page": 49,
+   "sections": [
+    {
+     "id": "6.1",
+     "slug": "6-1",
+     "number": "6.1",
+     "title": "Delivery methods",
+     "page": 49,
+     "synthetic": false
+    },
+    {
+     "id": "6.2",
+     "slug": "6-2",
+     "number": "6.2",
+     "title": "Feeding, delivery and process fibers",
+     "page": 49,
+     "synthetic": false
+    },
+    {
+     "id": "6.3",
+     "slug": "6-3",
+     "number": "6.3",
+     "title": "Fiber parameters",
+     "page": 49,
+     "synthetic": false
+    },
+    {
+     "id": "6.4",
+     "slug": "6-4",
+     "number": "6.4",
+     "title": "Industrial fiber connectors",
+     "page": 50,
+     "synthetic": false
+    },
+    {
+     "id": "6.5",
+     "slug": "6-5",
+     "number": "6.5",
+     "title": "Delivery engineering rules",
+     "page": 50,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-7",
+   "kind": "part",
+   "number": 7,
+   "roman": "VII",
+   "title": "Galvo Scanning and Motion",
+   "fullTitle": "Part VII — Galvo Scanning and Motion",
+   "page": 51,
+   "sections": [
+    {
+     "id": "7.1",
+     "slug": "7-1",
+     "number": "7.1",
+     "title": "Scanner technologies",
+     "page": 51,
+     "synthetic": false
+    },
+    {
+     "id": "7.2",
+     "slug": "7-2",
+     "number": "7.2",
+     "title": "Galvo architecture and parameters",
+     "page": 52,
+     "synthetic": false
+    },
+    {
+     "id": "7.3",
+     "slug": "7-3",
+     "number": "7.3",
+     "title": "Scan strategies",
+     "page": 53,
+     "synthetic": false
+    },
+    {
+     "id": "7.4",
+     "slug": "7-4",
+     "number": "7.4",
+     "title": "Motion systems",
+     "page": 54,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-8",
+   "kind": "part",
+   "number": 8,
+   "roman": "VIII",
+   "title": "Laser Process Heads",
+   "fullTitle": "Part VIII — Laser Process Heads",
+   "page": 55,
+   "sections": [
+    {
+     "id": "8.1",
+     "slug": "8-1",
+     "number": "8.1",
+     "title": "Building blocks",
+     "page": 55,
+     "synthetic": false
+    },
+    {
+     "id": "8.2",
+     "slug": "8-2",
+     "number": "8.2",
+     "title": "Head types",
+     "page": 56,
+     "synthetic": false
+    },
+    {
+     "id": "8.3",
+     "slug": "8-3",
+     "number": "8.3",
+     "title": "Coaxial vs off-axis arrangements",
+     "page": 57,
+     "synthetic": false
+    },
+    {
+     "id": "8.4",
+     "slug": "8-4",
+     "number": "8.4",
+     "title": "Autofocus, height sensing and focus control",
+     "page": 57,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-9",
+   "kind": "part",
+   "number": 9,
+   "roman": "IX",
+   "title": "Laser–Material Interaction",
+   "fullTitle": "Part IX — Laser–Material Interaction",
+   "page": 58,
+   "sections": [
+    {
+     "id": "9.1",
+     "slug": "9-1",
+     "number": "9.1",
+     "title": "The four fates of a photon",
+     "page": 58,
+     "synthetic": false
+    },
+    {
+     "id": "9.2",
+     "slug": "9-2",
+     "number": "9.2",
+     "title": "Metals",
+     "page": 58,
+     "synthetic": false
+    },
+    {
+     "id": "9.3",
+     "slug": "9-3",
+     "number": "9.3",
+     "title": "Non-metals and engineered materials",
+     "page": 59,
+     "synthetic": false
+    },
+    {
+     "id": "9.4",
+     "slug": "9-4",
+     "number": "9.4",
+     "title": "The thermal regime: conduction, melting, vaporisation and HAZ",
+     "page": 59,
+     "synthetic": false
+    },
+    {
+     "id": "9.5",
+     "slug": "9-5",
+     "number": "9.5",
+     "title": "Ablation regimes: photothermal, photochemical, non-thermal",
+     "page": 60,
+     "synthetic": false
+    },
+    {
+     "id": "9.6",
+     "slug": "9-6",
+     "number": "9.6",
+     "title": "Plasma formation and shielding",
+     "page": 61,
+     "synthetic": false
+    },
+    {
+     "id": "9.7",
+     "slug": "9-7",
+     "number": "9.7",
+     "title": "Process regime map",
+     "page": 61,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-10",
+   "kind": "part",
+   "number": 10,
+   "roman": "X",
+   "title": "Laser Manufacturing Processes",
+   "fullTitle": "Part X — Laser Manufacturing Processes",
+   "page": 62,
+   "sections": [
+    {
+     "id": "10.1",
+     "slug": "10-1",
+     "number": "10.1",
+     "title": "Process taxonomy",
+     "page": 62,
+     "synthetic": false
+    },
+    {
+     "id": "10.2",
+     "slug": "10-2",
+     "number": "10.2",
+     "title": "Laser marking",
+     "page": 63,
+     "synthetic": false
+    },
+    {
+     "id": "10.3",
+     "slug": "10-3",
+     "number": "10.3",
+     "title": "Laser cutting",
+     "page": 65,
+     "synthetic": false
+    },
+    {
+     "id": "10.4",
+     "slug": "10-4",
+     "number": "10.4",
+     "title": "Laser welding",
+     "page": 67,
+     "synthetic": false
+    },
+    {
+     "id": "10.5",
+     "slug": "10-5",
+     "number": "10.5",
+     "title": "Laser soldering",
+     "page": 68,
+     "synthetic": false
+    },
+    {
+     "id": "10.6",
+     "slug": "10-6",
+     "number": "10.6",
+     "title": "Laser brazing",
+     "page": 71,
+     "synthetic": false
+    },
+    {
+     "id": "10.7",
+     "slug": "10-7",
+     "number": "10.7",
+     "title": "Laser drilling",
+     "page": 71,
+     "synthetic": false
+    },
+    {
+     "id": "10.8",
+     "slug": "10-8",
+     "number": "10.8",
+     "title": "Ablation and micromachining",
+     "page": 71,
+     "synthetic": false
+    },
+    {
+     "id": "10.9",
+     "slug": "10-9",
+     "number": "10.9",
+     "title": "Laser cleaning",
+     "page": 72,
+     "synthetic": false
+    },
+    {
+     "id": "10.10",
+     "slug": "10-10",
+     "number": "10.10",
+     "title": "Cladding and additive manufacturing",
+     "page": 72,
+     "synthetic": false
+    },
+    {
+     "id": "10.11",
+     "slug": "10-11",
+     "number": "10.11",
+     "title": "Laser heat treatment",
+     "page": 72,
+     "synthetic": false
+    },
+    {
+     "id": "10.12",
+     "slug": "10-12",
+     "number": "10.12",
+     "title": "Laser surface texturing",
+     "page": 73,
+     "synthetic": false
+    },
+    {
+     "id": "10.13",
+     "slug": "10-13",
+     "number": "10.13",
+     "title": "The CO₂ laser",
+     "page": 73,
+     "synthetic": false
+    },
+    {
+     "id": "10.14",
+     "slug": "10-14",
+     "number": "10.14",
+     "title": "The UV laser",
+     "page": 75,
+     "synthetic": false
+    },
+    {
+     "id": "10.15",
+     "slug": "10-15",
+     "number": "10.15",
+     "title": "Ultrafast lasers in processing",
+     "page": 76,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-11",
+   "kind": "part",
+   "number": 11,
+   "roman": "XI",
+   "title": "Laser System and Machine Architecture",
+   "fullTitle": "Part XI — Laser System and Machine Architecture",
+   "page": 78,
+   "sections": [
+    {
+     "id": "11.1",
+     "slug": "11-1",
+     "number": "11.1",
+     "title": "Optical chain",
+     "page": 78,
+     "synthetic": false
+    },
+    {
+     "id": "11.2",
+     "slug": "11-2",
+     "number": "11.2",
+     "title": "Control architecture",
+     "page": 79,
+     "synthetic": false
+    },
+    {
+     "id": "11.3",
+     "slug": "11-3",
+     "number": "11.3",
+     "title": "Mechanical engineering",
+     "page": 80,
+     "synthetic": false
+    },
+    {
+     "id": "11.4",
+     "slug": "11-4",
+     "number": "11.4",
+     "title": "Electrical engineering",
+     "page": 80,
+     "synthetic": false
+    },
+    {
+     "id": "11.5",
+     "slug": "11-5",
+     "number": "11.5",
+     "title": "Software architecture",
+     "page": 81,
+     "synthetic": false
+    },
+    {
+     "id": "11.6",
+     "slug": "11-6",
+     "number": "11.6",
+     "title": "Safety architecture",
+     "page": 81,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-12",
+   "kind": "part",
+   "number": 12,
+   "roman": "XII",
+   "title": "Automation and Vision",
+   "fullTitle": "Part XII — Automation and Vision",
+   "page": 83,
+   "sections": [
+    {
+     "id": "12.1",
+     "slug": "12-1",
+     "number": "12.1",
+     "title": "Vision system building blocks",
+     "page": 83,
+     "synthetic": false
+    },
+    {
+     "id": "12.2",
+     "slug": "12-2",
+     "number": "12.2",
+     "title": "The vision-guided processing loop",
+     "page": 84,
+     "synthetic": false
+    },
+    {
+     "id": "12.3",
+     "slug": "12-3",
+     "number": "12.3",
+     "title": "Integration with automation",
+     "page": 84,
+     "synthetic": false
+    },
+    {
+     "id": "12.4",
+     "slug": "12-4",
+     "number": "12.4",
+     "title": "Handshake: a typical in-line marking cycle",
+     "page": 85,
+     "synthetic": false
+    },
+    {
+     "id": "12.5",
+     "slug": "12-5",
+     "number": "12.5",
+     "title": "Recipes, interlocks, data logging, traceability and SPC",
+     "page": 85,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-13",
+   "kind": "part",
+   "number": 13,
+   "roman": "XIII",
+   "title": "Semiconductor Laser Applications",
+   "fullTitle": "Part XIII — Semiconductor Laser Applications",
+   "page": 87,
+   "sections": [
+    {
+     "id": "13.1",
+     "slug": "13-1",
+     "number": "13.1",
+     "title": "Front end",
+     "page": 87,
+     "synthetic": false
+    },
+    {
+     "id": "13.2",
+     "slug": "13-2",
+     "number": "13.2",
+     "title": "Back end and advanced packaging",
+     "page": 88,
+     "synthetic": false
+    },
+    {
+     "id": "13.3",
+     "slug": "13-3",
+     "number": "13.3",
+     "title": "Materials: silicon and compound semiconductors",
+     "page": 89,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-14",
+   "kind": "part",
+   "number": 14,
+   "roman": "XIV",
+   "title": "Electronics and EMS",
+   "fullTitle": "Part XIV — Electronics and EMS",
+   "page": 90,
+   "sections": [
+    {
+     "id": "14.1",
+     "slug": "14-1",
+     "number": "14.1",
+     "title": "Process-by-assembly map",
+     "page": 91,
+     "synthetic": false
+    },
+    {
+     "id": "14.2",
+     "slug": "14-2",
+     "number": "14.2",
+     "title": "End devices",
+     "page": 91,
+     "synthetic": false
+    },
+    {
+     "id": "14.3",
+     "slug": "14-3",
+     "number": "14.3",
+     "title": "Process summary",
+     "page": 92,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-15",
+   "kind": "part",
+   "number": 15,
+   "roman": "XV",
+   "title": "Battery and New Energy",
+   "fullTitle": "Part XV — Battery and New Energy",
+   "page": 93,
+   "sections": [
+    {
+     "id": "15.1",
+     "slug": "15-1",
+     "number": "15.1",
+     "title": "Cell formats",
+     "page": 93,
+     "synthetic": false
+    },
+    {
+     "id": "15.2",
+     "slug": "15-2",
+     "number": "15.2",
+     "title": "From electrode to pack",
+     "page": 94,
+     "synthetic": false
+    },
+    {
+     "id": "15.3",
+     "slug": "15-3",
+     "number": "15.3",
+     "title": "Laser applications",
+     "page": 94,
+     "synthetic": false
+    },
+    {
+     "id": "15.4",
+     "slug": "15-4",
+     "number": "15.4",
+     "title": "Wavelength and pulse comparison for battery manufacturing",
+     "page": 95,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-16",
+   "kind": "part",
+   "number": 16,
+   "roman": "XVI",
+   "title": "Automotive",
+   "fullTitle": "Part XVI — Automotive",
+   "page": 97,
+   "sections": [
+    {
+     "id": "16.0",
+     "slug": "16-0",
+     "number": null,
+     "title": "Automotive",
+     "page": 97,
+     "synthetic": true
+    }
+   ]
+  },
+  {
+   "id": "part-17",
+   "kind": "part",
+   "number": 17,
+   "roman": "XVII",
+   "title": "Aerospace",
+   "fullTitle": "Part XVII — Aerospace",
+   "page": 99,
+   "sections": [
+    {
+     "id": "17.0",
+     "slug": "17-0",
+     "number": null,
+     "title": "Aerospace",
+     "page": 99,
+     "synthetic": true
+    }
+   ]
+  },
+  {
+   "id": "part-18",
+   "kind": "part",
+   "number": 18,
+   "roman": "XVIII",
+   "title": "Medical",
+   "fullTitle": "Part XVIII — Medical",
+   "page": 100,
+   "sections": [
+    {
+     "id": "18.1",
+     "slug": "18-1",
+     "number": "18.1",
+     "title": "Clinical laser applications",
+     "page": 100,
+     "synthetic": false
+    },
+    {
+     "id": "18.2",
+     "slug": "18-2",
+     "number": "18.2",
+     "title": "Medical device manufacturing",
+     "page": 101,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-19",
+   "kind": "part",
+   "number": 19,
+   "roman": "XIX",
+   "title": "Consumer and End Products",
+   "fullTitle": "Part XIX — Consumer and End Products",
+   "page": 102,
+   "sections": [
+    {
+     "id": "19.1",
+     "slug": "19-1",
+     "number": "19.1",
+     "title": "End-product map",
+     "page": 102,
+     "synthetic": false
+    },
+    {
+     "id": "19.2",
+     "slug": "19-2",
+     "number": "19.2",
+     "title": "Exploded application maps",
+     "page": 103,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-20",
+   "kind": "part",
+   "number": 20,
+   "roman": "XX",
+   "title": "Laser Application × Industry Matrix",
+   "fullTitle": "Part XX — Laser Application × Industry Matrix",
+   "page": 109,
+   "sections": [
+    {
+     "id": "20.0",
+     "slug": "20-0",
+     "number": null,
+     "title": "Laser Application × Industry Matrix",
+     "page": 109,
+     "synthetic": true
+    }
+   ]
+  },
+  {
+   "id": "part-21",
+   "kind": "part",
+   "number": 21,
+   "roman": "XXI",
+   "title": "Supplier Ecosystem",
+   "fullTitle": "Part XXI — Supplier Ecosystem",
+   "page": 112,
+   "sections": [
+    {
+     "id": "21.1",
+     "slug": "21-1",
+     "number": "21.1",
+     "title": "How the tiers make money",
+     "page": 112,
+     "synthetic": false
+    },
+    {
+     "id": "21.2",
+     "slug": "21-2",
+     "number": "21.2",
+     "title": "Recent structural changes",
+     "page": 112,
+     "synthetic": false
+    },
+    {
+     "id": "21.3",
+     "slug": "21-3",
+     "number": "21.3",
+     "title": "Laser source suppliers by technology class",
+     "page": 113,
+     "synthetic": false
+    },
+    {
+     "id": "21.4",
+     "slug": "21-4",
+     "number": "21.4",
+     "title": "Laser component ecosystem",
+     "page": 114,
+     "synthetic": false
+    },
+    {
+     "id": "21.5",
+     "slug": "21-5",
+     "number": "21.5",
+     "title": "Machine OEMs, integrators and application specialists",
+     "page": 115,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-22",
+   "kind": "part",
+   "number": 22,
+   "roman": "XXII",
+   "title": "The India Laser Ecosystem",
+   "fullTitle": "Part XXII — The India Laser Ecosystem",
+   "page": 116,
+   "sections": [
+    {
+     "id": "22.1",
+     "slug": "22-1",
+     "number": "22.1",
+     "title": "Map of the ecosystem",
+     "page": 116,
+     "synthetic": false
+    },
+    {
+     "id": "22.2",
+     "slug": "22-2",
+     "number": "22.2",
+     "title": "Strength, dependence, emergence and localisation",
+     "page": 117,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-23",
+   "kind": "part",
+   "number": 23,
+   "roman": "XXIII",
+   "title": "Economics and Product Management",
+   "fullTitle": "Part XXIII — Economics and Product Management",
+   "page": 118,
+   "sections": [
+    {
+     "id": "23.1",
+     "slug": "23-1",
+     "number": "23.1",
+     "title": "Machine cost structure and illustrative BOMs",
+     "page": 118,
+     "synthetic": false
+    },
+    {
+     "id": "23.2",
+     "slug": "23-2",
+     "number": "23.2",
+     "title": "CAPEX, OPEX and cost per part",
+     "page": 119,
+     "synthetic": false
+    },
+    {
+     "id": "23.3",
+     "slug": "23-3",
+     "number": "23.3",
+     "title": "Laser process selection framework",
+     "page": 120,
+     "synthetic": false
+    },
+    {
+     "id": "23.4",
+     "slug": "23-4",
+     "number": "23.4",
+     "title": "Product management framework",
+     "page": 122,
+     "synthetic": false
+    },
+    {
+     "id": "23.5",
+     "slug": "23-5",
+     "number": "23.5",
+     "title": "Application feasibility study template",
+     "page": 124,
+     "synthetic": false
+    },
+    {
+     "id": "23.6",
+     "slug": "23-6",
+     "number": "23.6",
+     "title": "Laser parameter development and DOE",
+     "page": 125,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-24",
+   "kind": "part",
+   "number": 24,
+   "roman": "XXIV",
+   "title": "Safety, Standards, Quality and Metrology",
+   "fullTitle": "Part XXIV — Safety, Standards, Quality and Metrology",
+   "page": 127,
+   "sections": [
+    {
+     "id": "24.1",
+     "slug": "24-1",
+     "number": "24.1",
+     "title": "Laser classes (IEC 60825-1)",
+     "page": 127,
+     "synthetic": false
+    },
+    {
+     "id": "24.2",
+     "slug": "24-2",
+     "number": "24.2",
+     "title": "Hazards",
+     "page": 127,
+     "synthetic": false
+    },
+    {
+     "id": "24.3",
+     "slug": "24-3",
+     "number": "24.3",
+     "title": "Relevant standards",
+     "page": 128,
+     "synthetic": false
+    },
+    {
+     "id": "24.4",
+     "slug": "24-4",
+     "number": "24.4",
+     "title": "Quality and metrology",
+     "page": 129,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-25",
+   "kind": "part",
+   "number": 25,
+   "roman": "XXV",
+   "title": "Advanced and Emerging Technologies, and the Road to 2040",
+   "fullTitle": "Part XXV — Advanced and Emerging Technologies, and the Road to 2040",
+   "page": 130,
+   "sections": [
+    {
+     "id": "25.1",
+     "slug": "25-1",
+     "number": "25.1",
+     "title": "Blue, green and UV sources",
+     "page": 130,
+     "synthetic": false
+    },
+    {
+     "id": "25.2",
+     "slug": "25-2",
+     "number": "25.2",
+     "title": "Beam shaping",
+     "page": 130,
+     "synthetic": false
+    },
+    {
+     "id": "25.3",
+     "slug": "25-3",
+     "number": "25.3",
+     "title": "Power and pulse scaling",
+     "page": 130,
+     "synthetic": false
+    },
+    {
+     "id": "25.4",
+     "slug": "25-4",
+     "number": "25.4",
+     "title": "Real-time monitoring, closed-loop control, AI and digital twins",
+     "page": 130,
+     "synthetic": false
+    },
+    {
+     "id": "25.5",
+     "slug": "25-5",
+     "number": "25.5",
+     "title": "Laser + robotics + machine vision",
+     "page": 131,
+     "synthetic": false
+    },
+    {
+     "id": "25.6",
+     "slug": "25-6",
+     "number": "25.6",
+     "title": "Additive manufacturing and laser-based semiconductor processing",
+     "page": 131,
+     "synthetic": false
+    },
+    {
+     "id": "25.7",
+     "slug": "25-7",
+     "number": "25.7",
+     "title": "Outlook 2030–2040",
+     "page": 131,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-26",
+   "kind": "part",
+   "number": 26,
+   "roman": "XXVI",
+   "title": "Reference Machine Architectures and Case Studies",
+   "fullTitle": "Part XXVI — Reference Machine Architectures and Case Studies",
+   "page": 133,
+   "sections": [
+    {
+     "id": "26.1",
+     "slug": "26-1",
+     "number": "26.1",
+     "title": "Reference machine architectures",
+     "page": 133,
+     "synthetic": false
+    },
+    {
+     "id": "26.2",
+     "slug": "26-2",
+     "number": "26.2",
+     "title": "End-to-end case studies",
+     "page": 137,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-27",
+   "kind": "part",
+   "number": 27,
+   "roman": "XXVII",
+   "title": "Reference Tables and Troubleshooting",
+   "fullTitle": "Part XXVII — Reference Tables and Troubleshooting",
+   "page": 141,
+   "sections": [
+    {
+     "id": "27.1",
+     "slug": "27-1",
+     "number": "27.1",
+     "title": "Quick reference",
+     "page": 141,
+     "synthetic": false
+    },
+    {
+     "id": "27.2",
+     "slug": "27-2",
+     "number": "27.2",
+     "title": "Troubleshooting handbook",
+     "page": 142,
+     "synthetic": false
+    }
+   ]
+  },
+  {
+   "id": "part-28",
+   "kind": "part",
+   "number": 28,
+   "roman": "XXVIII",
+   "title": "Master Laser Technology Map",
+   "fullTitle": "Part XXVIII — Master Laser Technology Map",
+   "page": 144,
+   "sections": [
+    {
+     "id": "28.0",
+     "slug": "28-0",
+     "number": null,
+     "title": "Master Laser Technology Map",
+     "page": 144,
+     "synthetic": true
+    }
+   ]
+  },
+  {
+   "id": "back",
+   "kind": "back",
+   "number": null,
+   "roman": null,
+   "title": "Back Matter",
+   "fullTitle": "Back Matter",
+   "page": 145,
+   "sections": [
+    {
+     "id": "B.1",
+     "slug": "b-1",
+     "number": "B.1",
+     "title": "Glossary",
+     "page": 145,
+     "synthetic": false
+    },
+    {
+     "id": "B.2",
+     "slug": "b-2",
+     "number": "B.2",
+     "title": "Abbreviation dictionary",
+     "page": 147,
+     "synthetic": false
+    },
+    {
+     "id": "B.3",
+     "slug": "b-3",
+     "number": "B.3",
+     "title": "Formula sheet",
+     "page": 149,
+     "synthetic": false
+    },
+    {
+     "id": "B.4",
+     "slug": "b-4",
+     "number": "B.4",
+     "title": "Reference charts and matrices in the body",
+     "page": 150,
+     "synthetic": false
+    },
+    {
+     "id": "B.5",
+     "slug": "b-5",
+     "number": "B.5",
+     "title": "Laser selection decision tree",
+     "page": 151,
+     "synthetic": false
+    },
+    {
+     "id": "B.6",
+     "slug": "b-6",
+     "number": "B.6",
+     "title": "Process selection matrix",
+     "page": 151,
+     "synthetic": false
+    },
+    {
+     "id": "B.7",
+     "slug": "b-7",
+     "number": "B.7",
+     "title": "Safety checklist",
+     "page": 152,
+     "synthetic": false
+    },
+    {
+     "id": "B.8",
+     "slug": "b-8",
+     "number": "B.8",
+     "title": "Product manager, application engineer and POC checklists",
+     "page": 152,
+     "synthetic": false
+    },
+    {
+     "id": "B.9",
+     "slug": "b-9",
+     "number": "B.9",
+     "title": "Recommended learning path",
+     "page": 153,
+     "synthetic": false
+    },
+    {
+     "id": "B.10",
+     "slug": "b-10",
+     "number": "B.10",
+     "title": "Laser Technology at a Glance",
+     "page": 153,
+     "synthetic": false
+    },
+    {
+     "id": "back.sources",
+     "slug": "sources",
+     "number": null,
+     "title": "Sources",
+     "page": 153,
+     "synthetic": false
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,573 @@
+{
+ "schemaVersion": 1,
+ "generatedAt": "2026-10-20T14:32:28+00:00",
+ "source": {
+  "file": "The Complete Laser Handbook.docx",
+  "sha256": "ea97e197b9e72745a5147b984fc075d451b0dcdeee5ad80fec473b2ab05fd7c4",
+  "bytes": 6946301
+ },
+ "meta": {
+  "title": "The Complete Laser Handbook",
+  "subtitle": "From Photon to Industrial Laser Systems, Processes, Machines & End-Product Applications",
+  "author": "Jatin Songara",
+  "date": "22 September 2026"
+ },
+ "counts": {
+  "parts (incl. front/back matter)": 30,
+  "numbered parts": 28,
+  "sections": 147,
+  "synthetic overview sections": 4,
+  "paragraphs": 196,
+  "subheadings": 66,
+  "tables": 177,
+  "table rows": 1623,
+  "list items": 40,
+  "checklist items": 44,
+  "preformatted blocks": 1,
+  "figures": 72,
+  "equation images (transcribed)": 43,
+  "diagram images": 29,
+  "missing charts": 2,
+  "external links": 27,
+  "contents entries": 173,
+  "empty paragraphs skipped": 7
+ },
+ "perPart": [
+  {
+   "id": "front",
+   "title": "Front Matter",
+   "sections": 5,
+   "tables": 4,
+   "figures": 1,
+   "page": 5
+  },
+  {
+   "id": "part-1",
+   "title": "Part I — Physics: Understanding Light from First Principles",
+   "sections": 11,
+   "tables": 5,
+   "figures": 6,
+   "page": 10
+  },
+  {
+   "id": "part-2",
+   "title": "Part II — Laser Science: Laser Physics and Laser Architecture",
+   "sections": 9,
+   "tables": 10,
+   "figures": 14,
+   "page": 15
+  },
+  {
+   "id": "part-3",
+   "title": "Part III — Laser Sources: Complete Classification",
+   "sections": 8,
+   "tables": 12,
+   "figures": 4,
+   "page": 24
+  },
+  {
+   "id": "part-4",
+   "title": "Part IV — Beam Engineering",
+   "sections": 6,
+   "tables": 4,
+   "figures": 7,
+   "page": 41
+  },
+  {
+   "id": "part-5",
+   "title": "Part V — Laser Optics",
+   "sections": 5,
+   "tables": 5,
+   "figures": 3,
+   "page": 45
+  },
+  {
+   "id": "part-6",
+   "title": "Part VI — Beam Delivery",
+   "sections": 5,
+   "tables": 3,
+   "figures": 0,
+   "page": 49
+  },
+  {
+   "id": "part-7",
+   "title": "Part VII — Galvo Scanning and Motion",
+   "sections": 4,
+   "tables": 5,
+   "figures": 1,
+   "page": 51
+  },
+  {
+   "id": "part-8",
+   "title": "Part VIII — Laser Process Heads",
+   "sections": 4,
+   "tables": 3,
+   "figures": 1,
+   "page": 55
+  },
+  {
+   "id": "part-9",
+   "title": "Part IX — Laser–Material Interaction",
+   "sections": 7,
+   "tables": 5,
+   "figures": 3,
+   "page": 58
+  },
+  {
+   "id": "part-10",
+   "title": "Part X — Laser Manufacturing Processes",
+   "sections": 15,
+   "tables": 27,
+   "figures": 7,
+   "page": 62
+  },
+  {
+   "id": "part-11",
+   "title": "Part XI — Laser System and Machine Architecture",
+   "sections": 6,
+   "tables": 6,
+   "figures": 3,
+   "page": 78
+  },
+  {
+   "id": "part-12",
+   "title": "Part XII — Automation and Vision",
+   "sections": 5,
+   "tables": 4,
+   "figures": 2,
+   "page": 83
+  },
+  {
+   "id": "part-13",
+   "title": "Part XIII — Semiconductor Laser Applications",
+   "sections": 3,
+   "tables": 3,
+   "figures": 1,
+   "page": 87
+  },
+  {
+   "id": "part-14",
+   "title": "Part XIV — Electronics and EMS",
+   "sections": 3,
+   "tables": 3,
+   "figures": 1,
+   "page": 90
+  },
+  {
+   "id": "part-15",
+   "title": "Part XV — Battery and New Energy",
+   "sections": 4,
+   "tables": 3,
+   "figures": 1,
+   "page": 93
+  },
+  {
+   "id": "part-16",
+   "title": "Part XVI — Automotive",
+   "sections": 1,
+   "tables": 1,
+   "figures": 0,
+   "page": 97
+  },
+  {
+   "id": "part-17",
+   "title": "Part XVII — Aerospace",
+   "sections": 1,
+   "tables": 2,
+   "figures": 0,
+   "page": 99
+  },
+  {
+   "id": "part-18",
+   "title": "Part XVIII — Medical",
+   "sections": 2,
+   "tables": 3,
+   "figures": 0,
+   "page": 100
+  },
+  {
+   "id": "part-19",
+   "title": "Part XIX — Consumer and End Products",
+   "sections": 2,
+   "tables": 16,
+   "figures": 1,
+   "page": 102
+  },
+  {
+   "id": "part-20",
+   "title": "Part XX — Laser Application × Industry Matrix",
+   "sections": 1,
+   "tables": 1,
+   "figures": 0,
+   "page": 109
+  },
+  {
+   "id": "part-21",
+   "title": "Part XXI — Supplier Ecosystem",
+   "sections": 5,
+   "tables": 5,
+   "figures": 1,
+   "page": 112
+  },
+  {
+   "id": "part-22",
+   "title": "Part XXII — The India Laser Ecosystem",
+   "sections": 2,
+   "tables": 2,
+   "figures": 0,
+   "page": 116
+  },
+  {
+   "id": "part-23",
+   "title": "Part XXIII — Economics and Product Management",
+   "sections": 6,
+   "tables": 8,
+   "figures": 4,
+   "page": 118
+  },
+  {
+   "id": "part-24",
+   "title": "Part XXIV — Safety, Standards, Quality and Metrology",
+   "sections": 4,
+   "tables": 4,
+   "figures": 1,
+   "page": 127
+  },
+  {
+   "id": "part-25",
+   "title": "Part XXV — Advanced and Emerging Technologies, and the Road to 2040",
+   "sections": 7,
+   "tables": 5,
+   "figures": 0,
+   "page": 130
+  },
+  {
+   "id": "part-26",
+   "title": "Part XXVI — Reference Machine Architectures and Case Studies",
+   "sections": 2,
+   "tables": 17,
+   "figures": 1,
+   "page": 133
+  },
+  {
+   "id": "part-27",
+   "title": "Part XXVII — Reference Tables and Troubleshooting",
+   "sections": 2,
+   "tables": 5,
+   "figures": 0,
+   "page": 141
+  },
+  {
+   "id": "part-28",
+   "title": "Part XXVIII — Master Laser Technology Map",
+   "sections": 1,
+   "tables": 0,
+   "figures": 0,
+   "page": 144
+  },
+  {
+   "id": "back",
+   "title": "Back Matter",
+   "sections": 11,
+   "tables": 6,
+   "figures": 9,
+   "page": 145
+  }
+ ],
+ "flags": [
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.4",
+   "message": "image2 (Boltzmann population ratio) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.6",
+   "message": "image3 (Photon energy, frequency and wavelength) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.8",
+   "message": "image4 (Brewster angle) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.9",
+   "message": "image5 (Photon momentum and radiation force) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.10",
+   "message": "image6 (Intensity and field amplitude) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "1.11",
+   "message": "image7 (Hagen–Rubens absorptance) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.1",
+   "message": "image8 (Einstein rate equation and coefficients) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.2",
+   "message": "image10 (Quantum defect) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.3",
+   "message": "image11 (Small-signal gain and saturation) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.4",
+   "message": "image13 (Threshold condition and output power) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.5",
+   "message": "image14 (Longitudinal mode spacing (free spectral range)) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.5",
+   "message": "image15 (Coherence length) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.5",
+   "message": "image16 (Brightness (radiance)) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.8",
+   "message": "image18 (Q-switched pulse energy versus repetition rate) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.9",
+   "message": "image20 (Average power, peak power and duty cycle) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "2.9",
+   "message": "image21 (Peak fluence, peak intensity and pulse overlap) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.1",
+   "message": "image26 (Gaussian beam intensity) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.1",
+   "message": "image27 (Gaussian beam propagation) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.2",
+   "message": "image28 (Beam propagation ratio M²) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.3",
+   "message": "image29 (Practical depth of focus for a spot-size tolerance) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.4",
+   "message": "image30 (Beam parameter product and numerical aperture) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.5",
+   "message": "image31 (Focused spot diameter and depth of focus) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "4.5",
+   "message": "image32 (Fiber core imaging and collimated diameter) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "5.2",
+   "message": "image33 (Normal-incidence Fresnel reflectance) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "5.3",
+   "message": "image34 (LIDT pulse-duration scaling) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "5.3",
+   "message": "image35 (Thermal lens focal length scaling) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "9.1",
+   "message": "image38 (Reflectance, absorption and penetration depth of absorbing media) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "error",
+   "code": "CHART_MISSING",
+   "location": "9.2",
+   "message": "Chart 'Approximate literature values, polished metals at 20 °C · 6 wavelengths' is referenced but its data/image is not present in the supplied .docx (placeholder link only)"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "9.4",
+   "message": "image39 (Thermal diffusion length) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "9.5",
+   "message": "image40 (Ablation depth per pulse, optimum fluence and incubation) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "error",
+   "code": "CHART_MISSING",
+   "location": "9.7",
+   "message": "Chart 'Order-of-magnitude engineering map · 10 process families' is referenced but its data/image is not present in the supplied .docx (placeholder link only)"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "10.4",
+   "message": "image42 (Heat input per unit length) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "10.14",
+   "message": "image44 (Nonlinear polarisation and SHG efficiency) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "10.15",
+   "message": "image46 (Time–bandwidth product) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "10.15",
+   "message": "image47 (Critical power for self-focusing) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "23.2",
+   "message": "image58 (Cost per good part) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "24.2",
+   "message": "image62 (Eyewear optical density and nominal ocular hazard distance) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image64 (Formula sheet — photons and waves) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image65 (Formula sheet — laser physics) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image66 (Formula sheet — pulses) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image67 (Formula sheet — Gaussian beams and focusing (1)) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image68 (Formula sheet — Gaussian beams and focusing (2)) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image69 (Formula sheet — optics and materials) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image70 (Formula sheet — thermal and ablation) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "EQUATION_TRANSCRIBED",
+   "location": "B.3",
+   "message": "image71 (Formula sheet — safety and economics) is an equation image; LaTeX was transcribed manually and needs review against the original image"
+  },
+  {
+   "severity": "info",
+   "code": "SYNTHETIC_SECTION",
+   "location": "16.0",
+   "message": "Part XVI — Automotive has no numbered sections; its content is exposed as one overview lesson"
+  },
+  {
+   "severity": "info",
+   "code": "SYNTHETIC_SECTION",
+   "location": "17.0",
+   "message": "Part XVII — Aerospace has no numbered sections; its content is exposed as one overview lesson"
+  },
+  {
+   "severity": "info",
+   "code": "SYNTHETIC_SECTION",
+   "location": "20.0",
+   "message": "Part XX — Laser Application × Industry Matrix has no numbered sections; its content is exposed as one overview lesson"
+  },
+  {
+   "severity": "info",
+   "code": "SYNTHETIC_SECTION",
+   "location": "28.0",
+   "message": "Part XXVIII — Master Laser Technology Map has no numbered sections; its content is exposed as one overview lesson"
+  }
+ ]
+}
